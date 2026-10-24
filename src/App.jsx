@@ -14,7 +14,9 @@ const useIslandStore = create((set) => ({
     set((s) => ({
       activeModule: moduleKey,
       visitedModules:
-        moduleKey && !s.visitedModules.includes(moduleKey)
+        moduleKey &&
+        moduleKey !== 'cruise' &&
+        !s.visitedModules.includes(moduleKey)
           ? [...s.visitedModules, moduleKey]
           : s.visitedModules,
     })),
@@ -32,11 +34,25 @@ const useIslandStore = create((set) => ({
   toggleSynergyLines: () => set((s) => ({ showSynergyLines: !s.showSynergyLines })),
   isPaused: false,
   togglePause: () => set((s) => ({ isPaused: !s.isPaused })),
-  toastMessage: '🍊 歡迎來到 EUREKA! 橙果島',
+  toastMessage: '🍊 歡迎來到 EUREKA！橙果島！點擊場館或國際郵輪即可探索學術研究與 AI 系統',
   setToastMessage: (msg) => set({ toastMessage: msg }),
   cameraFlight: null,
+  isFollowingCruise: false,
+  cruiseFollowStartTime: 0,
+  startFollowingCruise: () =>
+    set({
+      activeModule: 'cruise',
+      isModalOpen: true,
+      isMobileMenuOpen: false,
+      isFollowingCruise: true,
+      cruiseFollowStartTime: Date.now(),
+      cameraFlight: null,
+      toastMessage: '🚢 鏡頭已鎖定跟隨「EUREKA 海洋號」國際郵輪移動！右側展開臺灣以外之海外國際會議發表篇目',
+    }),
+  stopFollowingCruise: () => set({ isFollowingCruise: false }),
   triggerCameraFlight: (pos, target) =>
     set({
+      isFollowingCruise: false,
       cameraFlight: {
         pos: new THREE.Vector3(...pos),
         target: new THREE.Vector3(...target),
@@ -118,7 +134,9 @@ const SCENE_CONFIGS = {
 };
 
 // ==========================================
-// 3. 四大主題、四大場館與 3-4 類精細研究資料庫
+// 3. 四大主題場館 + 國際郵輪海外發表完整去識別化資料庫
+// 圓點規則：journal (紅色點) -> conf (淡綠色點) -> epaper (淡藍色點)
+// 等級規則：THCI第一級 / TSSCI第二級 優先置頂
 // ==========================================
 const researchModules = {
   theory: {
@@ -131,34 +149,64 @@ const researchModules = {
     shortTitle: '語言學大殿堂',
     summary: '解構人類語言深層語法，探索臺灣南島語與漢語之省略機制、左緣結構與句法語意介面。',
     quote: '「從形式句法與類型學視角，解構南島語與漢語中看不見卻決定語意的深層語法結構。」',
-    stats: { itemsCount: '10 項著作', synergyCount: '3 類核心主題' },
+    stats: { itemsCount: '10 篇著作', synergyCount: '3 類核心主題' },
     synergyWith: ['02 語料庫花園', '04 人工智慧咖啡廳'],
     center: [0, 0, 0],
     cameraPos: [0, 6.2, 9.2],
     categories: [
       {
-        name: '一、形式句法理論',
+        name: '一、限定詞組省略與左緣結構理論',
         list: [
-          '限定詞組省略理論研究：從南島語觀點出發 (Toward a Theory of DP Ellipsis: A Formosan Perspective)',
-          '疑問詞問句及其左緣結構之研究 (Left Periphery and Wh-questions)',
+          {
+            type: 'journal',
+            text: '限定詞組省略理論研究：從臺灣南島語觀點出發（Toward a Theory of DP Ellipsis: A Formosan Perspective）',
+          },
+          {
+            type: 'journal',
+            text: '賽夏語疑問詞問句及其左緣結構之研究（Left Periphery and Wh-questions in Saisiyat）',
+          },
+          {
+            type: 'conf',
+            text: '類型與參數：臺灣南島語限定詞組省略之研究（Typology and parameter: A study of DP ellipsis in Formosan languages）',
+          },
         ],
       },
       {
-        name: '二、臺灣南島語與語言類型學',
+        name: '二、臺灣南島語論元省略、空範疇與篇章指涉',
         list: [
-          '南島語限定詞組省略之類型與參數研究 (Typology and parameter: DP ellipsis)',
-          '論元省略與語法島修復機制研究 (Is island "repairable"? Argument drop study)',
-          '南島語數詞系統之句法結構分析 (Numerals syntax system analysis)',
+          {
+            type: 'conf',
+            text: '語法島可修復嗎？泰雅語論元省略之等同性研究（Is island "repairable"? A study on the identity of argument drop in Atayal）',
+          },
+          {
+            type: 'conf',
+            text: '泰雅語之篇章指涉與論旨角色指派（Discourse Reference and Theta-role Assignment in Atayal）',
+          },
+          {
+            type: 'conf',
+            text: '臺灣南島語空代名詞之分布與指涉（The distribution and reference of empty pronoun in Formosan languages）',
+          },
+          {
+            type: 'conf',
+            text: '兩類空範疇：泰雅語與賽夏語之比較研究（Two types of empty categories: A comparative study on Atayal and Saisiyat）',
+          },
         ],
       },
       {
-        name: '三、空範疇、控制結構與製圖理論',
+        name: '三、受事控制結構、數詞句法與製圖理論',
         list: [
-          '篇章指涉與論旨角色指派機制 (Discourse Reference and Theta-role Assignment)',
-          '空代名詞之分布與指涉特性研究 (Distribution and reference of empty pronoun)',
-          '兩類空範疇之跨語言比較研究 (Two types of empty categories: A comparative study)',
-          '受事控制結構之最簡方案分析 (Two types of object control: A minimalist perspective)',
-          '漢語疑問感嘆句之製圖理論分析 (Wh-exclamative constructions: A cartographic approach)',
+          {
+            type: 'conf',
+            text: '賽夏語的兩類受事控制結構：最簡方案觀點（Two types of object control in Saisiyat: A minimalist perspective）',
+          },
+          {
+            type: 'conf',
+            text: '漢語疑問感嘆句結構：製圖理論分析（Wh-exclamative constructions in Mandarin Chinese: A cartographic approach）',
+          },
+          {
+            type: 'conf',
+            text: '賽夏語的數詞系統（Numerals in Saisiyat）',
+          },
         ],
       },
     ],
@@ -173,42 +221,104 @@ const researchModules = {
     shortTitle: '語料庫花園',
     summary: '灌溉大規模真實口語與學習者語料，以依存距離（MDD）與統計模型剖析語音變異與詞彙常模。',
     quote: '「讓真實語料說話：從自由變異到偏誤類型，建立客觀可驗證的語言計量指標。」',
-    stats: { itemsCount: '13 項研究', synergyCount: '4 類核心主題' },
+    stats: { itemsCount: '18 篇著作', synergyCount: '4 類核心主題' },
     synergyWith: ['01 語言學大殿堂', '03 語言政策講堂', '04 人工智慧咖啡廳'],
     center: [12.5, 0, -7.2],
     cameraPos: [12.5, 6.0, 1.5],
     categories: [
       {
-        name: '一、學習者語料庫與語音變異',
+        name: '一、學習者語料庫與語音偏誤實證',
         list: [
-          '華語學習者語料庫語音偏誤研究：以不送氣舌尖後翹舌音、舌根鼻音和輕聲為例（THCI 第一級）',
-          '華語學習者輕聲偏誤及其潛在變項之相關性研究',
-          '語音習得之層次非對稱性：母語背景對鼻韻尾、輕聲與音韻規則的調節作用',
-          '是偏誤？還是變異？華語文教育語言規範新視角',
+          {
+            type: 'journal',
+            badge: 'THCI第一級',
+            text: '華語學習者語料庫語音偏誤研究：以不送氣舌尖後翹舌音、舌根鼻音和輕聲為例',
+          },
+          {
+            type: 'journal',
+            text: '華語學習者輕聲偏誤及其潛在變項之相關性研究',
+          },
+          {
+            type: 'conf',
+            text: '語音習得之層次非對稱性：母語背景對華語鼻韻尾、輕聲與音韻規則的調節作用',
+          },
+          {
+            type: 'conf',
+            text: '華語學習者語料庫語音偏誤分析和建議',
+          },
+          {
+            type: 'conf',
+            text: '是偏誤？還是變異？華語文教育語言規範新視角',
+          },
         ],
       },
       {
-        name: '二、華語自由變異與音變趨勢',
+        name: '二、臺灣華語自由變異與音變趨勢',
         list: [
-          '華語自由變異的類型和趨勢：基於語音語料庫的研究（THCI 第一級）',
-          '標準之外的聲音：從語料庫證據反思華語語音教學與語言規範',
-          '華語自由聲調變異之實證與語料庫研究 (Free tonal variation studies)',
-          '人群中悄然演變的聲音：基於口語語料庫之音變分析',
+          {
+            type: 'journal',
+            badge: 'THCI第一級',
+            text: '臺灣華語自由變異的類型和趨勢：基於語音語料庫的研究',
+          },
+          {
+            type: 'journal',
+            text: '標準之外的聲音：從語料庫證據反思華語語音教學與語言規範',
+          },
+          {
+            type: 'conf',
+            text: '臺灣華語自由聲調變異之實證研究（Free tonal variation in Taiwanese Mandarin: An empirical study）',
+          },
+          {
+            type: 'conf',
+            text: '臺灣華語自由聲調變異：基於語料庫之研究（Free tonal variation in Taiwanese Mandarin: A corpus-based study）',
+          },
+          {
+            type: 'conf',
+            text: '人群中悄然演變的聲音：基於口語語料庫之分析（Sound gradually changes in the crowd: A spoken corpus-based analysis）',
+          },
         ],
       },
       {
         name: '三、句法複雜度與疑問詞偏誤計量',
         list: [
-          '基於華語學習者語料庫之疑問詞「怎麼（樣）」偏誤分析（THCI 第一級）',
-          '初探華語文評量材料句法複雜度與自動檢測系統建置',
+          {
+            type: 'journal',
+            badge: 'THCI第一級',
+            text: '基於華語學習者語料庫之疑問詞「怎麼（樣）」偏誤分析',
+          },
+          {
+            type: 'conf',
+            text: '初探華語文評量材料句法複雜度與自動檢測系統建置',
+          },
+          {
+            type: 'conf',
+            text: '華語學習者疑問詞「怎麼」使用情況分析',
+          },
         ],
       },
       {
-        name: '四、評量詞彙基準建置與語言學科普',
+        name: '四、口語詞彙常模建置與語料庫科普',
         list: [
-          '初探華語的「變」與「不變」：基於語料庫的語音研究',
-          '英語學習者口語詞彙表建置與課綱字彙表改進建議',
-          '科普短文：基於語料庫的一字多音研究、口語語料庫對英語學習的啟示',
+          {
+            type: 'conf',
+            text: '初探台灣華語的「變」與「不變」：基於語料庫的語音研究',
+          },
+          {
+            type: 'conf',
+            text: '臺灣英語學習者口語詞彙表之建置（Making a spoken word list for EFL learners in Taiwan）',
+          },
+          {
+            type: 'conf',
+            text: '對教育部課綱英語字彙表的改進建議：基於口語語料庫的分析',
+          },
+          {
+            type: 'epaper',
+            text: '我都念「『塑』膠」，那你呢？基於語料庫的臺灣華語一字多音研究',
+          },
+          {
+            type: 'epaper',
+            text: '啥！電腦也會挑單字？口語語料庫對英語學習的啟示',
+          },
         ],
       },
     ],
@@ -223,42 +333,98 @@ const researchModules = {
     shortTitle: '語言政策講堂',
     summary: '結合語料庫輔助批評論述分析與跨國教育比較，連結實證語言證據與公共政策治理。',
     quote: '「連結語言證據與公共治理：從課綱教科書體檢到國際多語教育借鑑。」',
-    stats: { itemsCount: '13 項研究', synergyCount: '4 類核心主題' },
+    stats: { itemsCount: '17 篇著作', synergyCount: '4 類核心主題' },
     synergyWith: ['02 語料庫花園', '04 人工智慧咖啡廳'],
     center: [-12.5, 0, -7.2],
     cameraPos: [-12.5, 6.0, 1.5],
     categories: [
       {
-        name: '一、言談分析與批判論述分析',
+        name: '一、地方議會政治言談與批評論述分析',
         list: [
-          '以言建國：地方議會辯論之語料庫輔助批評論述分析',
-          '地方議會政治言談中的問句句式與評價性修辭分析',
-          '地方議會政治言談中的國族指涉詞：詞頻分布、共變模式與主體定位分析',
+          {
+            type: 'conf',
+            text: '以言建國：臺灣地方議會辯論之語料庫輔助批評論述分析（Nationhood by words: A corpus-assisted critical discourse analysis of Taiwan’s local council debates）',
+          },
+          {
+            type: 'conf',
+            text: '臺灣地方議會政治言談中的問句句式與評價性修辭分析',
+          },
+          {
+            type: 'conf',
+            text: '臺灣地方議會政治言談中的國族指涉詞：詞頻分布、共變模式與主體定位分析',
+          },
         ],
       },
       {
-        name: '二、課綱與公民社會教科書詞彙研究',
+        name: '二、課綱與教科書詞彙對比研究',
         list: [
-          '高中公民與社會教科書學術詞彙之比較研究（TSSCI 第二級）',
-          '新舊課綱高中社會領域教科書對比分析：語料庫為本之研究',
-          '社會教科書用語體檢與小學英語教科書詞彙分析',
+          {
+            type: 'journal',
+            badge: 'TSSCI第二級',
+            text: '臺灣高中公民與社會教科書學術詞彙之比較研究',
+          },
+          {
+            type: 'conf',
+            text: '新舊課綱高中社會領域教科書對比分析：語料庫為本之研究',
+          },
+          {
+            type: 'epaper',
+            text: '高中社會教科書用語大體檢！從新舊課綱教科書變化談起？',
+          },
+          {
+            type: 'epaper',
+            text: '荷蘭教科書到底都「寫」了什麼？小學英語教科書比一比',
+          },
         ],
       },
       {
-        name: '三、跨國雙語與多語教育政策比較',
+        name: '三、跨國雙語、多語與本土語教育政策',
         list: [
-          '多語教育怎麼「行」！？以歐洲三語學校的推動經驗為例',
-          '他山之石：歐美國家語言教育政策趨勢',
-          '東南亞與本土中小學英語教育政策之跨國比較',
-          '邁向多語共融的永續未來：歐亞雙語及多語教育政策比較與歐洲英語教育啟示',
+          {
+            type: 'journal',
+            text: '多語教育怎麼「行」！？以荷蘭菲仕蘭三語學校的推動經驗為例',
+          },
+          {
+            type: 'journal',
+            text: '他山之石：歐美國家語言教育政策趨勢',
+          },
+          {
+            type: 'conf',
+            text: '東南亞三國及臺灣中小學英語教育政策之比較',
+          },
+          {
+            type: 'conf',
+            text: '邁向多語共融的永續未來：荷蘭、香港語言教育政策之比較研究',
+          },
+          {
+            type: 'conf',
+            text: '穩健邁向未來：荷蘭、德國英語教育對台灣的啟示',
+          },
+          {
+            type: 'epaper',
+            text: '本土語言如何走出「校園孤島」？借鏡荷蘭菲仕蘭經驗，翻轉臺灣本土語教育的制度困境',
+          },
         ],
       },
       {
-        name: '四、校園治理、飲食政策與本土語推廣',
+        name: '四、校園治理、飲食政策與跨文化教育',
         list: [
-          '中小學營養午餐政策研究：現況、挑戰與國際借鑑',
-          '校園防疫治理經驗與國際借鑑',
-          '政策評論：本土語言走出校園孤島、跨國飲食教育比較',
+          {
+            type: 'journal',
+            text: '我國中小學營養午餐政策研究：現況、挑戰與國際借鑑',
+          },
+          {
+            type: 'conf',
+            text: '臺灣學校如何對抗新冠肺炎：不可不知的三件事（How Taiwan schools combat against COVID-19: Three things you need to know）',
+          },
+          {
+            type: 'epaper',
+            text: '各國學校飲食教育政策之發展趨勢',
+          },
+          {
+            type: 'epaper',
+            text: '一堂哈佛華語課的人生啟示',
+          },
         ],
       },
     ],
@@ -280,24 +446,42 @@ const researchModules = {
     isSystems: true,
     categories: [
       {
-        name: '一、句法複雜度自動診斷技術',
+        name: '一、句法複雜度自動檢測系統與演算法',
         list: [
-          '依存距離（DD）與平均依存距離（MDD）自動化剖析演算法',
-          '華語文讀本與評量文本之句法難度即時視覺化指標',
+          {
+            type: 'conf',
+            text: '初探華語文評量材料句法複雜度與自動檢測系統建置',
+          },
         ],
       },
       {
-        name: '二、自動化語音轉寫與語料檢索技術',
+        name: '二、自動語音轉寫與政治言談語料分析',
         list: [
-          '高精度語音辨識（STT）整合自動斷詞與詞性標註流水線',
-          '議會政治言談與口語語料庫之關鍵詞共現（Collocation）檢索',
+          {
+            type: 'conf',
+            text: '以言建國：臺灣地方議會辯論之語料庫輔助批評論述分析（Nationhood by words: A corpus-assisted critical discourse analysis of Taiwan’s local council debates）',
+          },
+          {
+            type: 'conf',
+            text: '臺灣地方議會政治言談中的國族指涉詞：詞頻分布、共變模式與主體定位分析',
+          },
         ],
       },
       {
-        name: '三、大型測驗詞頻與課綱常模應用',
+        name: '三、英語測驗詞頻與課綱詞彙常模系統',
         list: [
-          '歷屆大型英語測驗單字頻率分布與課綱字表對比檢索',
-          '第一線教師命題與教材編纂之即時詞頻輔助診斷工具',
+          {
+            type: 'conf',
+            text: '臺灣英語學習者口語詞彙表之建置（Making a spoken word list for EFL learners in Taiwan）',
+          },
+          {
+            type: 'conf',
+            text: '對教育部課綱英語字彙表的改進建議：基於口語語料庫的分析',
+          },
+          {
+            type: 'epaper',
+            text: '啥！電腦也會挑單字？口語語料庫對英語學習的啟示',
+          },
         ],
       },
     ],
@@ -324,8 +508,79 @@ const researchModules = {
   },
 };
 
+// ★ 點擊「國際郵輪」專屬模組：收錄臺灣以外之海外國際會議發表文章篇目 ★
+const CRUISE_INTERNATIONAL_MODULE = {
+  id: '🚢',
+  themeName: 'GLOBAL · 國際學術巡航',
+  venueName: 'EUREKA 海洋號 · 海外國際會議發表',
+  islandName: '🚢 國際巨型郵輪（鏡頭持續跟隨移動中）',
+  code: 'INTERNATIONAL CONFERENCES OUTSIDE TAIWAN',
+  title: '海外國際會議發表篇目',
+  shortTitle: '海外國際會議發表',
+  summary: '巡航世界八國文化，彙整於西班牙、捷克、美國、加拿大、日本與泰國發表之臺灣以外國際會議論文。',
+  quote: '「從臺灣南島語、華語音變到地方議會言談，將本土實證研究推向世界學術舞台。」',
+  stats: { itemsCount: '10 篇海外發表', synergyCount: '3 大國際區域' },
+  categories: [
+    {
+      name: '一、歐洲與北美（西班牙、捷克、美國、加拿大）國際會議發表',
+      list: [
+        {
+          type: 'conf',
+          text: '以言建國：臺灣地方議會辯論之語料庫輔助批評論述分析（Nationhood by words: A corpus-assisted critical discourse analysis of Taiwan’s local council debates）',
+        },
+        {
+          type: 'conf',
+          text: '類型與參數：臺灣南島語限定詞組省略之研究（Typology and parameter: A study of DP ellipsis in Formosan languages）',
+        },
+        {
+          type: 'conf',
+          text: '臺灣南島語空代名詞之分布與指涉（The distribution and reference of empty pronoun in Formosan languages）',
+        },
+        {
+          type: 'conf',
+          text: '賽夏語的兩類受事控制結構：最簡方案觀點（Two types of object control in Saisiyat: A minimalist perspective）',
+        },
+        {
+          type: 'conf',
+          text: '臺灣學校如何對抗新冠肺炎：不可不知的三件事（How Taiwan schools combat against COVID-19: Three things you need to know）',
+        },
+      ],
+    },
+    {
+      name: '二、東北亞（日本東京、京都）國際會議發表',
+      list: [
+        {
+          type: 'conf',
+          text: '臺灣華語自由聲調變異：基於語料庫之研究（Free tonal variation in Taiwanese Mandarin: A corpus-based study）',
+        },
+        {
+          type: 'conf',
+          text: '人群中悄然演變的聲音：基於口語語料庫之分析（Sound gradually changes in the crowd: A spoken corpus-based analysis）',
+        },
+        {
+          type: 'conf',
+          text: '語法島可修復嗎？泰雅語論元省略之等同性研究（Is island "repairable"? A study on the identity of argument drop in Atayal）',
+        },
+        {
+          type: 'conf',
+          text: '泰雅語之篇章指涉與論旨角色指派（Discourse Reference and Theta-role Assignment in Atayal）',
+        },
+      ],
+    },
+    {
+      name: '三、東南亞（泰國曼谷）國際會議發表',
+      list: [
+        {
+          type: 'conf',
+          text: '臺灣華語自由聲調變異之實證研究（Free tonal variation in Taiwanese Mandarin: An empirical study）',
+        },
+      ],
+    },
+  ],
+};
+
 // ==========================================
-// 4. 陸地與海洋無碰撞固定路線產生器 (All Non-Overlapping Closed Curves)
+// 4. 陸地與海洋無碰撞固定路線產生器
 // ==========================================
 function createHexagonPath(cx, cz, radius) {
   const pts = [];
@@ -336,7 +591,6 @@ function createHexagonPath(cx, cz, radius) {
   return new THREE.CatmullRomCurve3(pts, true, 'catmullrom', 0.08);
 }
 
-// 产生平滑封閉橢圓海面航道（確保每種海洋生物/運動/船隻都在專屬水域，絕不碰撞）
 function createOvalSeaRoute(cx, cz, rx, rz, y = -0.82) {
   const pts = [];
   for (let i = 0; i < 16; i++) {
@@ -346,7 +600,6 @@ function createOvalSeaRoute(cx, cz, rx, rz, y = -0.82) {
   return new THREE.CatmullRomCurve3(pts, true, 'catmullrom', 0.5);
 }
 
-// 陸地跨島橋樑大巡迴路徑
 function createGrandArchipelagoPath() {
   const pts = [
     new THREE.Vector3(0, 0.05, 4.3),
@@ -381,29 +634,23 @@ function createGrandArchipelagoPath() {
   return new THREE.CatmullRomCurve3(pts, true, 'catmullrom', 0.12);
 }
 
-// 觀光渡輪專屬中環跳島航線 (完全避開內灣運動區、三座橋樑與外海郵輪)
 function createOuterFerryRoute() {
   const pts = [
-    new THREE.Vector3(0.0, -0.82, -16.8),   // 北側海峽
-    new THREE.Vector3(18.0, -0.82, -13.8),  // 綠能風車島停靠站
-    new THREE.Vector3(20.5, -0.82, 0.0),    // 東側中環水道
-    new THREE.Vector3(17.2, -0.82, 13.0),   // 櫻花沙龍島停靠站
-    new THREE.Vector3(0.0, -0.82, 21.8),    // AI 島南側外海水道
-    new THREE.Vector3(-17.2, -0.82, 13.0),  // 遠洋港灣島停靠站
-    new THREE.Vector3(-20.5, -0.82, 0.0),   // 西側中環水道
-    new THREE.Vector3(-18.0, -0.82, -13.8), // 燈塔觀測站島停靠站
+    new THREE.Vector3(0.0, -0.82, -16.8),
+    new THREE.Vector3(18.0, -0.82, -13.8),
+    new THREE.Vector3(20.5, -0.82, 0.0),
+    new THREE.Vector3(17.2, -0.82, 13.0),
+    new THREE.Vector3(0.0, -0.82, 21.8),
+    new THREE.Vector3(-17.2, -0.82, 13.0),
+    new THREE.Vector3(-20.5, -0.82, 0.0),
+    new THREE.Vector3(-18.0, -0.82, -13.8),
   ];
   return new THREE.CatmullRomCurve3(pts, true, 'catmullrom', 0.45);
 }
 
 // ==========================================
-// 5. ★ 三座不同造型與配色的跨海大橋 ★
-// (1) 翡翠白玉拱橋 (Arch Bridge)
-// (2) 緋紅金冠斜張橋 (Cable-Stayed Bridge)
-// (3) 暖陽原木棧橋 (Wooden Bridge)
+// 5. 三座不同造型與配色的跨海大橋 (拱橋 / 斜張橋 / 原木棧橋)
 // ==========================================
-
-// (1) 拱橋：連通 橙果主島 ⇄ 02 語料庫花園
 function ArchBridge({ start, end }) {
   const { sceneMode, setToastMessage } = useIslandStore();
   const isNight = sceneMode === 'night';
@@ -423,12 +670,10 @@ function ArchBridge({ start, end }) {
         setToastMessage('🌈 翡翠白玉拱橋（Arch Bridge）：以雙拋物線翡翠鋼拱與白玉橋面連結語料庫花園！');
       }}
     >
-      {/* 象牙白石橋面 */}
       <mesh receiveShadow castShadow>
         <boxGeometry args={[length, 0.14, 1.45]} />
         <meshStandardMaterial color="#f8fafc" roughness={0.4} />
       </mesh>
-      {/* 翡翠綠兩側護欄 */}
       <mesh position={[0, 0.2, 0.66]} castShadow>
         <boxGeometry args={[length, 0.14, 0.1]} />
         <meshStandardMaterial color="#0d9488" />
@@ -438,7 +683,6 @@ function ArchBridge({ start, end }) {
         <meshStandardMaterial color="#0d9488" />
       </mesh>
 
-      {/* 雙側大型翡翠拱肋 (上拱結構 + 垂直吊桿) */}
       {[0.66, -0.66].map((zOffset, idx) => (
         <group key={idx}>
           <QuadraticBezierLine
@@ -464,12 +708,10 @@ function ArchBridge({ start, end }) {
           })}
         </group>
       ))}
-      {/* 拱頂橫向連繫樑 */}
       <mesh position={[0, 1.18, 0]} castShadow>
         <boxGeometry args={[0.18, 0.12, 1.38]} />
         <meshStandardMaterial color="#0f766e" />
       </mesh>
-      {/* 白石橋墩 */}
       <mesh position={[-length * 0.32, -0.55, 0]}>
         <cylinderGeometry args={[0.24, 0.3, 1.1, 12]} />
         <meshStandardMaterial color="#cbd5e1" />
@@ -482,7 +724,6 @@ function ArchBridge({ start, end }) {
   );
 }
 
-// (2) 斜張橋：連通 橙果主島 ⇄ 03 語言政策講堂
 function CableStayedBridge({ start, end }) {
   const { sceneMode, setToastMessage } = useIslandStore();
   const isNight = sceneMode === 'night';
@@ -502,7 +743,6 @@ function CableStayedBridge({ start, end }) {
         setToastMessage('🌉 緋紅金冠斜張橋（Cable-Stayed Bridge）：以高聳雙柱塔與放射狀黃金鋼索連結語言政策講堂！');
       }}
     >
-      {/* 現代深灰鋼構橋面與緋紅側樑 */}
       <mesh receiveShadow castShadow>
         <boxGeometry args={[length, 0.14, 1.45]} />
         <meshStandardMaterial color="#334155" roughness={0.5} />
@@ -516,7 +756,6 @@ function CableStayedBridge({ start, end }) {
         <meshStandardMaterial color="#e11d48" />
       </mesh>
 
-      {/* 中央 H 型高聳斜張橋主塔 (緋紅塔身 + 黃金塔冠) */}
       <group position={[0, 0, 0]}>
         <mesh position={[0, 1.15, 0.68]} castShadow>
           <boxGeometry args={[0.24, 2.8, 0.18]} />
@@ -526,7 +765,6 @@ function CableStayedBridge({ start, end }) {
           <boxGeometry args={[0.24, 2.8, 0.18]} />
           <meshStandardMaterial color="#e11d48" />
         </mesh>
-        {/* 塔間橫樑與黃金塔冠 */}
         <mesh position={[0, 1.65, 0]} castShadow>
           <boxGeometry args={[0.2, 0.16, 1.45]} />
           <meshStandardMaterial color="#facc15" />
@@ -540,7 +778,6 @@ function CableStayedBridge({ start, end }) {
           />
         </mesh>
 
-        {/* 雙側放射狀斜張鋼索 */}
         {[0.68, -0.68].map((zSide, sIdx) =>
           cableAnchors.map((ax, cIdx) => (
             <Line
@@ -559,7 +796,6 @@ function CableStayedBridge({ start, end }) {
   );
 }
 
-// (3) 原木棧橋：連通 橙果主島 ⇄ 04 人工智慧咖啡廳
 function WoodenBridge({ start, end }) {
   const { setToastMessage } = useIslandStore();
   const midX = (start[0] + end[0]) / 2;
@@ -578,19 +814,16 @@ function WoodenBridge({ start, end }) {
         setToastMessage('🪵 暖陽原木棧橋（Wooden Bridge）：以溫潤杉木枕木與原木欄杆連結人工智慧咖啡廳！');
       }}
     >
-      {/* 溫潤原木橋面 */}
       <mesh receiveShadow castShadow>
         <boxGeometry args={[length, 0.12, 1.4]} />
         <meshStandardMaterial color="#b45309" roughness={0.75} />
       </mesh>
-      {/* 枕木紋理飾條 */}
       {[-1.7, -1.1, -0.5, 0.1, 0.7, 1.3, 1.8].map((px, idx) => (
         <mesh key={idx} position={[px, 0.07, 0]} receiveShadow>
           <boxGeometry args={[0.25, 0.03, 1.38]} />
           <meshStandardMaterial color="#d97706" />
         </mesh>
       ))}
-      {/* 雙側原木護欄橫桿 */}
       <mesh position={[0, 0.32, 0.64]} castShadow>
         <boxGeometry args={[length, 0.07, 0.07]} />
         <meshStandardMaterial color="#78350f" />
@@ -599,7 +832,6 @@ function WoodenBridge({ start, end }) {
         <boxGeometry args={[length, 0.07, 0.07]} />
         <meshStandardMaterial color="#78350f" />
       </mesh>
-      {/* 原木立柱與海中木樁 */}
       {posts.map((px, i) => (
         <group key={i} position={[px, 0, 0]}>
           <mesh position={[0, 0.22, 0.64]} castShadow>
@@ -639,7 +871,6 @@ function SightseeingFerrySystem({ ferryCurve }) {
     if (isPaused) return;
     const elapsed = clock.getElapsedTime();
 
-    // 兩艘渡輪同速、相差 0.5 圈，永遠保持半圈距離，絕不追撞
     [
       { ref: ferry1Ref, offset: 0.0, speed: 0.02 },
       { ref: ferry2Ref, offset: 0.5, speed: 0.02 },
@@ -719,7 +950,7 @@ function SightseeingFerrySystem({ ferryCurve }) {
 
 // ==========================================
 // 7. 國際巨型郵輪「EUREKA 海洋號」與 8 國傳統服飾貴賓
-// (台灣、美國、日本、捷克、西班牙、泰國、加拿大、芬蘭)
+// (點擊郵輪即刻啟動跟隨鏡頭 + 展開海外國際會議發表清單)
 // ==========================================
 const EIGHT_NATIONS_PASSENGERS = [
   {
@@ -940,7 +1171,7 @@ function TraditionalPassenger({ data, index }) {
 }
 
 function InternationalCruiseShip({ cruiseCurve, shipRef }) {
-  const { isPaused, showLabels, sceneMode, setToastMessage, triggerCameraFlight } = useIslandStore();
+  const { isPaused, showLabels, sceneMode, isFollowingCruise, startFollowingCruise } = useIslandStore();
   const isNight = sceneMode === 'night';
 
   useFrame(({ clock }) => {
@@ -959,13 +1190,7 @@ function InternationalCruiseShip({ cruiseCurve, shipRef }) {
 
   const handleInspectCruise = (e) => {
     e.stopPropagation();
-    if (shipRef.current) {
-      const p = shipRef.current.position;
-      triggerCameraFlight([p.x, p.y + 6.5, p.z + 8.5], [p.x, p.y + 1.8, p.z]);
-    }
-    setToastMessage(
-      '🚢 國際巨型郵輪「EUREKA 海洋號」：甲板上載著 🇹🇼台灣、🇺🇸美國、🇯🇵日本、🇨🇿捷克、🇪🇸西班牙、🇹🇭泰國、🇨🇦加拿大、🇫🇮芬蘭 8 國傳統服飾貴賓！'
-    );
+    startFollowingCruise();
   };
 
   return (
@@ -1031,8 +1256,14 @@ function InternationalCruiseShip({ cruiseCurve, shipRef }) {
 
       {showLabels && (
         <Html position={[0, 4.1, 0]} center distanceFactor={28}>
-          <div className="bg-gradient-to-r from-amber-500 to-rose-600 text-white px-3 py-1 rounded-full text-[10px] font-black shadow-xl border border-amber-200 whitespace-nowrap cursor-pointer">
-            🚢 國際巨型郵輪 · 傳統服飾貴賓
+          <div
+            className={`px-3 py-1 rounded-full text-[10px] font-black shadow-xl border whitespace-nowrap cursor-pointer transition-transform ${
+              isFollowingCruise
+                ? 'bg-rose-600 text-white border-amber-200 scale-110'
+                : 'bg-gradient-to-r from-amber-500 to-rose-600 text-white border-amber-200 hover:scale-105'
+            }`}
+          >
+            🚢 國際巨型郵輪 · 海外國際發表 (點我跟船巡航)
           </div>
         </Html>
       )}
@@ -1078,22 +1309,18 @@ function FlyingHelicopter() {
         setToastMessage('🚁 空中巡航號直升機：正從高空俯瞰橙果島、三座特色大橋與外海郵輪！');
       }}
     >
-      {/* 機艙主體 (+Z 為機頭) */}
       <mesh rotation={[Math.PI / 2, 0, 0]} castShadow>
         <capsuleGeometry args={[0.62, 0.9, 12, 16]} />
         <meshStandardMaterial color="#e05a47" />
       </mesh>
-      {/* 前方玻璃駕駛艙 (+Z) */}
       <mesh position={[0, 0.08, 0.55]}>
         <sphereGeometry args={[0.56, 14, 14]} />
         <meshStandardMaterial color="#bae6fd" metalness={0.3} roughness={0.1} />
       </mesh>
-      {/* 機身白條紋 */}
       <mesh position={[0, -0.05, 0]}>
         <boxGeometry args={[1.28, 0.2, 1.35]} />
         <meshStandardMaterial color="#ffffff" />
       </mesh>
-      {/* 機尾延伸桿 (-Z) 與垂直尾翼 */}
       <mesh position={[0, 0.15, -1.55]} rotation={[Math.PI / 2, 0, 0]} castShadow>
         <cylinderGeometry args={[0.12, 0.26, 1.9, 12]} />
         <meshStandardMaterial color="#e05a47" />
@@ -1102,7 +1329,6 @@ function FlyingHelicopter() {
         <boxGeometry args={[0.1, 0.65, 0.35]} />
         <meshStandardMaterial color="#ffffff" />
       </mesh>
-      {/* 底部雙起落架滑橇 */}
       <mesh position={[-0.45, -0.72, 0]} rotation={[Math.PI / 2, 0, 0]}>
         <cylinderGeometry args={[0.04, 0.04, 1.8, 8]} />
         <meshStandardMaterial color="#334155" />
@@ -1111,7 +1337,6 @@ function FlyingHelicopter() {
         <cylinderGeometry args={[0.04, 0.04, 1.8, 8]} />
         <meshStandardMaterial color="#334155" />
       </mesh>
-      {/* 頂部高速旋轉主螺旋槳 */}
       <group position={[0, 0.82, 0]} ref={mainRotorRef}>
         <mesh position={[0, 0.08, 0]}>
           <boxGeometry args={[3.9, 0.04, 0.22]} />
@@ -1122,7 +1347,6 @@ function FlyingHelicopter() {
           <meshStandardMaterial color="#1e293b" />
         </mesh>
       </group>
-      {/* 尾部螺旋槳 */}
       <group position={[0.14, 0.45, -2.35]} ref={tailRotorRef}>
         <mesh>
           <boxGeometry args={[0.04, 0.75, 0.1]} />
@@ -2368,10 +2592,8 @@ function UprightActor({
 }
 
 // ==========================================
-// 12. ★ 依循獨立固定航道、絕不相撞之海上運動與鯨豚生態 ★
+// 12. 依循獨立固定航道、絕不相撞之海上運動與鯨豚生態
 // ==========================================
-
-// (A) 依循東內灣專屬航道的 SUP 立槳衝浪者
 function RouteSUPPaddler({ curve, offset = 0, speed = 0.035, boardColor = '#facc15', role = 'SUP 玩家' }) {
   const supRef = useRef();
   const { isPaused, showLabels } = useIslandStore();
@@ -2415,7 +2637,6 @@ function RouteSUPPaddler({ curve, offset = 0, speed = 0.035, boardColor = '#facc
   );
 }
 
-// (B) 依循西內灣專屬航道的「台灣白海豚群 (4隻結伴同行)」
 function TaiwaneseWhiteDolphinPod({ curve, speed = 0.032 }) {
   const podRef = useRef();
   const dolphinRefs = useRef([]);
@@ -2493,7 +2714,6 @@ function TaiwaneseWhiteDolphinPod({ curve, speed = 0.032 }) {
   );
 }
 
-// (C) 依循東外海專屬航道的「鯨魚家族 (爸爸、媽媽帶 3 隻小鯨魚)」
 function WhaleFamilyPod({ curve, speed = 0.022 }) {
   const familyRef = useRef();
   const { isPaused, showLabels, setToastMessage } = useIslandStore();
@@ -2554,7 +2774,6 @@ function WhaleFamilyPod({ curve, speed = 0.022 }) {
   );
 }
 
-// (D) 依循北內灣專屬航道的「單獨 1 隻大翅鯨噴水」
 function SoloHumpbackWhale({ curve, speed = 0.025 }) {
   const whaleRef = useRef();
   const spoutRef = useRef();
@@ -2814,7 +3033,6 @@ function OuterSatelliteIslands() {
         )}
       </group>
 
-      {/* 停泊在港灣島安全港池內的帆船 */}
       <group ref={boatRef} position={[-18.8, -0.82, 18.2]}>
         <mesh castShadow>
           <boxGeometry args={[1.8, 0.42, 0.85]} />
@@ -2834,51 +3052,90 @@ function OuterSatelliteIslands() {
 }
 
 // ==========================================
-// 14. 3D 群島總場景與智慧相機控制器
+// 14. 3D 群島總場景與智慧相機控制器 (支援持續跟隨國際郵輪移動)
 // ==========================================
 function IslandScene({ controlsRef, cruiseShipRef }) {
   const { viewport } = useThree();
-  const { showSynergyLines, sceneMode, autoRotate, cameraFlight, clearCameraFlight } = useIslandStore();
+  const {
+    showSynergyLines,
+    sceneMode,
+    autoRotate,
+    cameraFlight,
+    clearCameraFlight,
+    isFollowingCruise,
+    cruiseFollowStartTime,
+  } = useIslandStore();
   const env = SCENE_CONFIGS[sceneMode] || SCENE_CONFIGS.day;
+
+  const prevShipWorldPos = useRef(new THREE.Vector3());
+  const hasPrevShipPos = useRef(false);
 
   const responsiveScale = useMemo(() => {
     const minDim = Math.min(viewport.width, viewport.height);
     return Math.max(0.72, Math.min(1.15, minDim / 13.0));
   }, [viewport.width, viewport.height]);
 
-  // 1. 陸地六角環島步道與跨橋路徑
   const hexPathOrange = useMemo(() => createHexagonPath(0, 0, 4.35), []);
   const hexPathCorpus = useMemo(() => createHexagonPath(12.5, -7.2, 3.75), []);
   const hexPathPolicy = useMemo(() => createHexagonPath(-12.5, -7.2, 3.75), []);
   const hexPathSystems = useMemo(() => createHexagonPath(0, 14.0, 3.75), []);
   const grandBridgePath = useMemo(() => createGrandArchipelagoPath(), []);
 
-  // 2. ★ 海上無碰撞獨立分流航道 (各自擁有專屬海域，絕不交錯相撞) ★
-  // (a) 東內灣航道：SUP 立槳衝浪區
   const supBayCurve = useMemo(() => createOvalSeaRoute(8.2, 5.2, 2.2, 1.8, -0.82), []);
-  // (b) 西內灣航道：台灣白海豚群 (4隻) 保育區
   const whiteDolphinCurve = useMemo(() => createOvalSeaRoute(-8.2, 5.2, 2.3, 1.9, -0.88), []);
-  // (c) 北內灣航道：單獨大翅鯨噴水巡游區
   const humpbackCurve = useMemo(() => createOvalSeaRoute(0.0, -10.2, 3.3, 1.6, -0.88), []);
-  // (d) 東外海航道：鯨魚家族 (爸媽帶3小鯨) 巡游區
   const whaleFamilyCurve = useMemo(() => createOvalSeaRoute(26.5, 0.0, 2.0, 4.2, -0.88), []);
-  // (e) 中環跳島航道：無人島觀光渡輪
   const outerFerryCurve = useMemo(() => createOuterFerryRoute(), []);
-  // (f) 外環公海航道：國際巨型郵輪 (載8國傳統服飾人民)
   const internationalCruiseCurve = useMemo(() => createOvalSeaRoute(0.0, 0.0, 39.5, 31.0, -0.82), []);
 
   useFrame(() => {
     const controls = controlsRef.current;
-    if (!controls || !cameraFlight) return;
-    controls.object.position.lerp(cameraFlight.pos, 0.08);
-    controls.target.lerp(cameraFlight.target, 0.08);
-    controls.update();
+    if (!controls) return;
 
-    if (
-      controls.object.position.distanceTo(cameraFlight.pos) < 0.15 ||
-      Date.now() - cameraFlight.timestamp > 1600
-    ) {
-      clearCameraFlight();
+    // ★ 模式 A：持續跟隨「國際巨型郵輪」移動 ★
+    if (isFollowingCruise && cruiseShipRef.current) {
+      const shipWorldPos = new THREE.Vector3();
+      cruiseShipRef.current.getWorldPosition(shipWorldPos);
+      const shipTarget = shipWorldPos.clone().add(new THREE.Vector3(0, 1.8, 0));
+
+      const elapsedSinceStart = Date.now() - cruiseFollowStartTime;
+
+      if (elapsedSinceStart < 1500 || !hasPrevShipPos.current) {
+        // 前 1.5 秒平滑飛近郵輪側前方最佳觀賞視角
+        const shipQuat = new THREE.Quaternion();
+        cruiseShipRef.current.getWorldQuaternion(shipQuat);
+        const idealOffset = new THREE.Vector3(6.5, 5.0, 8.0).applyQuaternion(shipQuat);
+        const idealCamPos = shipWorldPos.clone().add(idealOffset);
+
+        controls.object.position.lerp(idealCamPos, 0.08);
+        controls.target.lerp(shipTarget, 0.12);
+      } else {
+        // 之後每一幀皆加上郵輪位移向量，讓畫面 100% 持續跟著郵輪航行，且支援使用者自由旋轉/縮放
+        const delta = shipWorldPos.clone().sub(prevShipWorldPos.current);
+        controls.object.position.add(delta);
+        controls.target.lerp(shipTarget, 0.25);
+      }
+
+      prevShipWorldPos.current.copy(shipWorldPos);
+      hasPrevShipPos.current = true;
+      controls.update();
+      return;
+    } else {
+      hasPrevShipPos.current = false;
+    }
+
+    // 模式 B：定點建築或全景平滑飛行
+    if (cameraFlight) {
+      controls.object.position.lerp(cameraFlight.pos, 0.08);
+      controls.target.lerp(cameraFlight.target, 0.08);
+      controls.update();
+
+      if (
+        controls.object.position.distanceTo(cameraFlight.pos) < 0.15 ||
+        Date.now() - cameraFlight.timestamp > 1600
+      ) {
+        clearCameraFlight();
+      }
     }
   });
 
@@ -2893,13 +3150,11 @@ function IslandScene({ controlsRef, cruiseShipRef }) {
       <SnowParticles active={env.isSnow} />
 
       <group scale={[responsiveScale, responsiveScale, responsiveScale]} position={[0, -0.5, 0]}>
-        {/* 廣闊大海 */}
         <mesh position={[0, -1.25, 0]} receiveShadow>
           <cylinderGeometry args={[92, 92, 0.8, 64]} />
           <meshStandardMaterial color={env.ocean} roughness={0.22} />
         </mesh>
 
-        {/* 天空飛行器與雲朵：直升機、4 朵立體白雲、海鷗群 */}
         <FlyingHelicopter />
         <FluffyCloud position={[-15, 11.8, -10]} scale={1.15} speed={0.16} />
         <FluffyCloud position={[16, 12.2, -8]} scale={1.3} speed={0.14} />
@@ -2907,10 +3162,8 @@ function IslandScene({ controlsRef, cruiseShipRef }) {
         <FluffyCloud position={[13, 11.4, 11]} scale={1.05} speed={0.15} />
         <SeagullFlock />
 
-        {/* 外海 4 座無人島與衛星島嶼 */}
         <OuterSatelliteIslands />
 
-        {/* ★ 分流海上運動、鯨豚與船隻（各自沿專屬固定路線行進，絕不相撞） ★ */}
         <RouteSUPPaddler curve={supBayCurve} offset={0.0} speed={0.04} boardColor="#facc15" role="SUP 玩家" />
         <RouteSUPPaddler curve={supBayCurve} offset={0.5} speed={0.04} boardColor="#34d399" role="SUP 初學者" />
         <TaiwaneseWhiteDolphinPod curve={whiteDolphinCurve} speed={0.032} />
@@ -2919,18 +3172,12 @@ function IslandScene({ controlsRef, cruiseShipRef }) {
         <SightseeingFerrySystem ferryCurve={outerFerryCurve} />
         <InternationalCruiseShip cruiseCurve={internationalCruiseCurve} shipRef={cruiseShipRef} />
 
-        {/* 4 座六角主題島嶼與場館 */}
         <HexThemeIslands />
 
-        {/* ★ 三座造型與顏色截然不同的跨海大橋 ★ */}
-        {/* 1. 東北橋：翡翠白玉拱橋 (Arch Bridge) */}
         <ArchBridge start={[4.4, 0, -2.5]} end={[8.4, 0, -4.8]} />
-        {/* 2. 西北橋：緋紅金冠斜張橋 (Cable-Stayed Bridge) */}
         <CableStayedBridge start={[-4.4, 0, -2.5]} end={[-8.4, 0, -4.8]} />
-        {/* 3. 南方橋：暖陽原木棧橋 (Wooden Bridge) */}
         <WoodenBridge start={[0, 0, 5.1]} end={[0, 0, 9.3]} />
 
-        {/* 跨場館知識協作光弧 */}
         {showSynergyLines && (
           <group>
             <QuadraticBezierLine start={[0, 3.2, -1.2]} end={[12.5, 3.2, -7.2]} mid={[6.2, 6.8, -4.2]} color="#0d9488" lineWidth={2} dashed dashScale={2} />
@@ -2940,7 +3187,6 @@ function IslandScene({ controlsRef, cruiseShipRef }) {
           </group>
         )}
 
-        {/* 雙向自然移動、站直朝前之多元人物與萌寵群 */}
         <UprightActor curve={hexPathOrange} offset={0.02} speed={0.028} dir={1} laneOffset={-0.22} actorType="dog_walker" shirt="#e05a47" bottom="#1e293b" petColor="#d97706" role="遛狗島主" />
         <UprightActor curve={hexPathOrange} offset={0.28} speed={0.022} dir={-1} laneOffset={0.24} actorType="stroller_family" role="爸媽與嫩嬰" />
         <UprightActor curve={hexPathOrange} offset={0.52} speed={0.03} dir={1} laneOffset={-0.2} actorType="umbrella" shirt="#ec4899" bottom="#be185d" umbrellaColor="#f472b6" role="語言學者" />
@@ -2972,7 +3218,7 @@ function IslandScene({ controlsRef, cruiseShipRef }) {
       <OrbitControls
         ref={controlsRef}
         onStart={clearCameraFlight}
-        autoRotate={autoRotate}
+        autoRotate={autoRotate && !isFollowingCruise}
         autoRotateSpeed={0.6}
         enablePan={true}
         enableZoom={true}
@@ -2995,7 +3241,6 @@ export default function App() {
   const cruiseShipRef = useRef();
   const [searchQuery, setSearchQuery] = useState('');
 
-  // 自動設定瀏覽器書籤與分頁名稱為「EUREKA！橙果島」
   useEffect(() => {
     document.title = 'EUREKA！橙果島';
   }, []);
@@ -3017,12 +3262,18 @@ export default function App() {
     isPaused,
     togglePause,
     toastMessage,
-    setToastMessage,
+    isFollowingCruise,
+    startFollowingCruise,
     triggerCameraFlight,
     clearCameraFlight,
   } = useIslandStore();
 
-  const mod = activeModule ? researchModules[activeModule] : null;
+  const mod =
+    activeModule === 'cruise'
+      ? CRUISE_INTERNATIONAL_MODULE
+      : activeModule
+      ? researchModules[activeModule]
+      : null;
 
   const filteredModules = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -3037,7 +3288,7 @@ export default function App() {
         val.categories.some(
           (cat) =>
             cat.name.toLowerCase().includes(q) ||
-            cat.list.some((item) => item.toLowerCase().includes(q))
+            cat.list.some((item) => item.text.toLowerCase().includes(q))
         );
       return matchHeader || matchItems;
     });
@@ -3077,18 +3328,20 @@ export default function App() {
     triggerCameraFlight([0, 48.0, 4.0], [0, 0, 2.0]);
   };
 
+  // ★ 點擊「國際郵輪」按鈕：啟動全程跟船鏡頭 + 展開海外國際會議發表篇目 ★
   const handleFocusCruiseShip = () => {
-    setModalOpen(false);
-    setMobileMenuOpen(false);
-    if (cruiseShipRef.current) {
-      const p = cruiseShipRef.current.position;
-      triggerCameraFlight([p.x, p.y + 6.5, p.z + 8.5], [p.x, p.y + 1.8, p.z]);
-    } else {
-      triggerCameraFlight([32, 6.5, 22], [28, 1.5, 16]);
+    startFollowingCruise();
+  };
+
+  // 根據文章類型回傳對應顏色圓點 (紅點=期刊/學位論文、淡綠點=會議論文、淡藍點=電子報)
+  const renderDotByType = (type) => {
+    if (type === 'journal') {
+      return <span className="w-2.5 h-2.5 rounded-full bg-red-500 ring-2 ring-red-100 shrink-0 mt-1" title="期刊／學位論文" />;
     }
-    setToastMessage(
-      '🚢 已登船特寫「EUREKA 海洋號」！甲板上為台灣、美國、日本、捷克、西班牙、泰國、加拿大、芬蘭傳統服飾人民！'
-    );
+    if (type === 'conf') {
+      return <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-emerald-100 shrink-0 mt-1" title="會議論文" />;
+    }
+    return <span className="w-2.5 h-2.5 rounded-full bg-sky-400 ring-2 ring-sky-100 shrink-0 mt-1" title="電子報／科普文章" />;
   };
 
   return (
@@ -3122,8 +3375,12 @@ export default function App() {
         <div className="pointer-events-auto flex items-center gap-1">
           <button
             onClick={handleFocusCruiseShip}
-            className="bg-white/95 text-slate-800 border border-stone-200 px-2.5 py-2 rounded-xl text-xs font-bold shadow-lg"
-            title="國際郵輪特寫"
+            className={`border px-2.5 py-2 rounded-xl text-xs font-bold shadow-lg ${
+              isFollowingCruise
+                ? 'bg-rose-600 text-white border-rose-400'
+                : 'bg-white/95 text-slate-800 border-stone-200'
+            }`}
+            title="跟隨國際郵輪與海外發表"
           >
             🚢
           </button>
@@ -3175,9 +3432,13 @@ export default function App() {
         <div className="h-4 w-[1px] bg-stone-300 mx-1" />
         <button
           onClick={handleFocusCruiseShip}
-          className="px-3 py-1 rounded-full text-xs font-extrabold bg-rose-100 hover:bg-rose-200 text-rose-900"
+          className={`px-3 py-1 rounded-full text-xs font-extrabold transition-all ${
+            isFollowingCruise
+              ? 'bg-rose-600 text-white shadow-md scale-105'
+              : 'bg-rose-100 hover:bg-rose-200 text-rose-900'
+          }`}
         >
-          🚢 國際郵輪
+          🚢 {isFollowingCruise ? '跟隨郵輪中' : '國際郵輪'}
         </button>
         <button
           onClick={handleBirdsEyeView}
@@ -3233,9 +3494,13 @@ export default function App() {
           </button>
           <button
             onClick={handleFocusCruiseShip}
-            className="px-3 py-1 rounded-full text-xs font-bold bg-rose-100 hover:bg-rose-200 text-rose-900"
+            className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${
+              isFollowingCruise
+                ? 'bg-rose-600 text-white shadow-md'
+                : 'bg-rose-100 hover:bg-rose-200 text-rose-900'
+            }`}
           >
-            🚢 近看國際郵輪
+            🚢 {isFollowingCruise ? '跟隨國際郵輪中' : '近看國際郵輪'}
           </button>
           <button
             onClick={handleBirdsEyeView}
@@ -3323,9 +3588,9 @@ export default function App() {
         </div>
       </aside>
 
-      {/* 6. 右側詳細研究與 AI 系統卡片 */}
+      {/* 6. 右側詳細研究與 AI 系統卡片 (支援三色圓點與 THCI/TSSCI 等級標章) */}
       {isModalOpen && mod && (
-        <div className="absolute top-14 md:top-4 right-3 md:right-5 bottom-20 md:bottom-16 z-30 w-[380px] max-w-[92vw] bg-[#fdfbf7]/95 backdrop-blur-xl border border-stone-200/90 rounded-3xl p-5 shadow-2xl pointer-events-auto flex flex-col justify-between overflow-hidden">
+        <div className="absolute top-14 md:top-4 right-3 md:right-5 bottom-20 md:bottom-16 z-30 w-[395px] max-w-[92vw] bg-[#fdfbf7]/95 backdrop-blur-xl border border-stone-200/90 rounded-3xl p-5 shadow-2xl pointer-events-auto flex flex-col justify-between overflow-hidden">
           <div className="overflow-y-auto pr-1 space-y-3.5">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-extrabold text-[#e05a47] bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-200">
@@ -3347,6 +3612,22 @@ export default function App() {
 
             <div className="bg-stone-100 border-l-4 border-[#e05a47] p-3 rounded-r-xl text-xs text-slate-700 font-medium leading-relaxed">
               {mod.quote}
+            </div>
+
+            {/* 三色圓點圖例說明 */}
+            <div className="flex flex-wrap items-center gap-3 bg-white/90 border border-stone-200/80 px-3 py-2 rounded-xl text-[11px] font-bold text-slate-600">
+              <span className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-red-500 inline-block" />
+                期刊／學位論文
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block" />
+                會議論文
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-sky-400 inline-block" />
+                電子報
+              </span>
             </div>
 
             {mod.isSystems && mod.links && (
@@ -3385,10 +3666,17 @@ export default function App() {
                       {cat.list.map((item, iIdx) => (
                         <div
                           key={iIdx}
-                          className="bg-white border border-stone-200/90 rounded-xl p-2.5 text-xs text-slate-700 font-medium shadow-sm flex items-start gap-2"
+                          className="bg-white border border-stone-200/90 rounded-xl p-2.5 text-xs text-slate-700 font-medium shadow-sm flex items-start gap-2.5"
                         >
-                          <span className="text-[#e05a47] font-black mt-0.5">●</span>
-                          <span className="leading-relaxed">{item}</span>
+                          {renderDotByType(item.type)}
+                          <div className="leading-relaxed flex-1">
+                            <span>{item.text}</span>
+                            {item.badge && (
+                              <span className="ml-1.5 inline-block text-[10px] font-extrabold bg-rose-50 text-rose-700 border border-rose-200 px-1.5 py-0.5 rounded-md">
+                                {item.badge}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       ))}
                     </div>
