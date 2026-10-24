@@ -1032,7 +1032,7 @@ function InternationalCruiseShip({ cruiseCurve, shipRef }) {
       {showLabels && (
         <Html position={[0, 4.1, 0]} center distanceFactor={28}>
           <div className="bg-gradient-to-r from-amber-500 to-rose-600 text-white px-3 py-1 rounded-full text-[10px] font-black shadow-xl border border-amber-200 whitespace-nowrap cursor-pointer">
-            🚢 國際巨型郵輪 · 八國傳統服飾貴賓
+            🚢 國際巨型郵輪 · 傳統服飾貴賓
           </div>
         </Html>
       )}
@@ -3123,7 +3123,7 @@ export default function App() {
           <button
             onClick={handleFocusCruiseShip}
             className="bg-white/95 text-slate-800 border border-stone-200 px-2.5 py-2 rounded-xl text-xs font-bold shadow-lg"
-            title="八國郵輪特寫"
+            title="國際郵輪特寫"
           >
             🚢
           </button>
@@ -3177,7 +3177,7 @@ export default function App() {
           onClick={handleFocusCruiseShip}
           className="px-3 py-1 rounded-full text-xs font-extrabold bg-rose-100 hover:bg-rose-200 text-rose-900"
         >
-          🚢 八國郵輪
+          🚢 國際郵輪
         </button>
         <button
           onClick={handleBirdsEyeView}
@@ -3235,7 +3235,7 @@ export default function App() {
             onClick={handleFocusCruiseShip}
             className="px-3 py-1 rounded-full text-xs font-bold bg-rose-100 hover:bg-rose-200 text-rose-900"
           >
-            🚢 近看八國郵輪
+            🚢 近看國際郵輪
           </button>
           <button
             onClick={handleBirdsEyeView}
