@@ -5,7 +5,7 @@ import { create } from 'zustand';
 import * as THREE from 'three';
 
 // ==========================================
-// 1. 全域狀態管理
+// 1. 全域狀態管理 (Zustand)
 // ==========================================
 const useIslandStore = create((set) => ({
   activeModule: 'systems',
@@ -55,8 +55,8 @@ const researchModules = {
   corpus: {
     id: '02',
     code: 'MODULE 02 · 實證計量',
-    title: '計量語言學與語料庫研究中心',
-    shortTitle: '計量語言學與語料庫',
+    title: '計量句法、語音與語料庫研究中心',
+    shortTitle: '計量句法與語料庫',
     summary: '運用大規模口語與學習者語料庫，結合依存距離（MDD）與統計建模，剖析語音變異、習得偏誤與詞彙常模。',
     quote: '「讓真實語料說話：從自由變異到偏誤類型，建立客觀可驗證的語言計量指標。」',
     stats: { itemsCount: '13 項研究', synergyCount: '3 條協作' },
@@ -109,17 +109,15 @@ const researchModules = {
 };
 
 // ==========================================
-// 3. 道路尋路步行者（不撞建築）
+// 3. 步行者元件 (沿道路行走，不撞建築)
 // ==========================================
 function SafePathWalker({ data }) {
   const { pathIndex, speed = 0.8, role, shirt, bottom, hair } = data;
   const groupRef = useRef();
-  const leftLegRef = useRef();
-  const rightLegRef = useRef();
   const { isPaused, showLabels } = useIslandStore();
 
   useFrame(({ clock }) => {
-    if (isPaused) return;
+    if (isPaused || !groupRef.current) return;
     const t = clock.getElapsedTime() * speed;
     let x = 0, z = 0, nextX = 0, nextZ = 0;
     const progress = (t * 0.35) % 4;
@@ -128,10 +126,6 @@ function SafePathWalker({ data }) {
       const p = progress / 4;
       x = -3.5 + p * 7.0; z = 2.5 - p * 5.0;
       nextX = x + 0.1; nextZ = z - 0.08;
-    } else if (pathIndex === 1) {
-      const p = progress / 4;
-      x = 3.5 - p * 7.0; z = 2.5 - p * 5.0;
-      nextX = x - 0.1; nextZ = z - 0.08;
     } else {
       const angle = (t * 0.4) + (pathIndex * 2);
       const r = 2.4;
@@ -140,27 +134,19 @@ function SafePathWalker({ data }) {
     }
 
     const bounce = Math.abs(Math.sin(t * 6)) * 0.08;
-    if (groupRef.current) {
-      groupRef.current.position.set(x, 0.05 + bounce, z);
-      groupRef.current.rotation.y = Math.atan2(nextX - x, nextZ - z);
-    }
-    const swing = Math.sin(t * 6) * 0.5;
-    if (leftLegRef.current) leftLegRef.current.rotation.x = swing;
-    if (rightLegRef.current) rightLegRef.current.rotation.x = -swing;
+    groupRef.current.position.set(x, 0.05 + bounce, z);
+    groupRef.current.rotation.y = Math.atan2(nextX - x, nextZ - z);
   });
 
   return (
     <group ref={groupRef} scale={[0.48, 0.48, 0.48]}>
-      <group position={[-0.14, 0.35, 0]} ref={leftLegRef}>
-        <mesh position={[0, -0.18, 0]} castShadow><boxGeometry args={[0.15, 0.35, 0.16} /><meshStandardMaterial color={bottom} /></mesh>
-      </group>
-      <group position={[0.14, 0.35, 0]} ref={rightLegRef}>
-        <mesh position={[0, -0.18, 0]} castShadow><boxGeometry args={[0.15, 0.35, 0.16} /><meshStandardMaterial color={bottom} /></mesh>
-      </group>
-      <mesh position={[0, 0.72, 0]} castShadow><cylinderGeometry args={[0.24, 0.3, 0.6, 14} /><meshStandardMaterial color={shirt} /></mesh>
+      <mesh position={[0, 0.72, 0]} castShadow>
+        <cylinderGeometry args={[0.24, 0.3, 0.6, 12]} />
+        <meshStandardMaterial color={shirt} />
+      </mesh>
       <group position={[0, 1.38, 0]}>
-        <mesh castShadow><sphereGeometry args={[0.35, 16, 16]} /><meshStandardMaterial color="#ffedd5" /></mesh>
-        <mesh position={[0, 0.1, -0.03]} castShadow><sphereGeometry args={[0.36, 14, 14]} /><meshStandardMaterial color={hair} /></mesh>
+        <mesh castShadow><sphereGeometry args={[0.35, 14, 14]} /><meshStandardMaterial color="#ffedd5" /></mesh>
+        <mesh position={[0, 0.1, -0.03]}><sphereGeometry args={[0.36, 12, 12]} /><meshStandardMaterial color={hair} /></mesh>
       </group>
       {showLabels && (
         <Html position={[0, 2.1, 0]} center distanceFactor={20}>
@@ -174,17 +160,8 @@ function SafePathWalker({ data }) {
 }
 
 // ==========================================
-// 4. 海上船隻、衝浪、日光浴與海鷗
+// 4. 海上船隻與動態元素
 // ==========================================
-function FlagBanner({ color }) {
-  return (
-    <mesh position={[0, 0.3, 0]}>
-      <boxGeometry args={[0.35, 0.22, 0.04]} />
-      <meshStandardMaterial color={color} roughness={0.3} />
-    </mesh>
-  );
-}
-
 function CargoShip({ startZ, speed, flagColor }) {
   const shipRef = useRef();
   const { isPaused } = useIslandStore();
@@ -200,30 +177,8 @@ function CargoShip({ startZ, speed, flagColor }) {
     <group ref={shipRef} position={[-32, -0.95, startZ]} scale={[0.8, 0.8, 0.8]}>
       <mesh castShadow><boxGeometry args={[5.2, 1.1, 2.0]} /><meshStandardMaterial color="#1e293b" /></mesh>
       <mesh position={[0, 0.7, 0]}><boxGeometry args={[4.2, 0.9, 1.8]} /><meshStandardMaterial color="#e2e8f0" /></mesh>
-      <mesh position={[-0.8, 1.4, 0]}><boxGeometry args={[1.4, 0.9, 1.5]} /><meshStandardMaterial color="#ef4444" /></mesh>
-      <mesh position={[0.8, 1.4, 0]}><boxGeometry args={[1.4, 0.9, 1.5]} /><meshStandardMaterial color="#3b82f6" /></mesh>
       <mesh position={[2.0, 1.6, 0]}><cylinderGeometry args={[0.03, 0.03, 1.5]} /><meshStandardMaterial color="#64748b" /></mesh>
-      <group position={[2.0, 2.1, 0]}><FlagBanner color={flagColor} /></group>
-    </group>
-  );
-}
-
-function LuxuryYacht({ startZ, speed }) {
-  const yachtRef = useRef();
-  const { isPaused } = useIslandStore();
-
-  useFrame(({ clock }) => {
-    if (isPaused || !yachtRef.current) return;
-    const t = clock.getElapsedTime() * speed;
-    const x = -(((t * 5) % 65) - 32);
-    yachtRef.current.position.set(x, -0.98, startZ);
-    yachtRef.current.rotation.y = Math.PI;
-  });
-
-  return (
-    <group ref={yachtRef} position={[32, -0.98, startZ]} scale={[0.6, 0.6, 0.6]}>
-      <mesh castShadow><boxGeometry args={[4.0, 0.8, 1.6]} /><meshStandardMaterial color="#ffffff" /></mesh>
-      <mesh position={[0.3, 0.6, 0]}><boxGeometry args={[2.2, 0.7, 1.3]} /><meshStandardMaterial color="#0284c7" roughness={0.1} /></mesh>
+      <mesh position={[2.0, 2.1, 0]}><boxGeometry args={[0.35, 0.22, 0.04]} /><meshStandardMaterial color={flagColor} /></mesh>
     </group>
   );
 }
@@ -237,8 +192,7 @@ function SurferAndDog({ angleOffset, radius }) {
     const t = clock.getElapsedTime() * 0.9 + angleOffset;
     const x = Math.cos(t) * radius;
     const z = Math.sin(t) * radius;
-    const waveBob = Math.sin(t * 6) * 0.08;
-    surfRef.current.position.set(x, -1.05 + waveBob, z);
+    surfRef.current.position.set(x, -1.05 + Math.sin(t * 6) * 0.08, z);
     surfRef.current.rotation.y = -t + Math.PI / 2;
   });
 
@@ -246,52 +200,25 @@ function SurferAndDog({ angleOffset, radius }) {
     <group ref={surfRef}>
       <mesh rotation={[0, 0, 0.1]} castShadow><boxGeometry args={[1.8, 0.12, 0.55]} /><meshStandardMaterial color="#facc15" /></mesh>
       <mesh position={[0, 0.45, 0]}><capsuleGeometry args={[0.18, 0.4, 8, 12]} /><meshStandardMaterial color="#ea580c" /></mesh>
-      <mesh position={[0, 0.82, 0]}><sphereGeometry args={[0.16, 12, 12]} /><meshStandardMaterial color="#ffedd5" /></mesh>
-      <group position={[0.5, 0.28, 0]} scale={[0.5, 0.5, 0.5]}>
-        <mesh><boxGeometry args={[0.6, 0.3, 0.3]} /><meshStandardMaterial color="#d97706" /></mesh>
-        <mesh position={[0.3, 0.22, 0]}><sphereGeometry args={[0.15, 10, 10]} /><meshStandardMaterial color="#d97706" /></mesh>
-      </group>
     </group>
   );
 }
 
-function FlyingSeagulls() {
-  const g1Ref = useRef();
-  const { isPaused } = useIslandStore();
-
-  useFrame(({ clock }) => {
-    if (isPaused || !g1Ref.current) return;
-    const t = clock.getElapsedTime() * 0.6;
-    const angle = t * 0.5;
-    g1Ref.current.position.set(Math.cos(angle) * 16, 8.5 + Math.sin(t * 3) * 0.6, Math.sin(angle) * 14);
-    g1Ref.current.rotation.y = -angle;
-  });
-
-  return (
-    <group ref={g1Ref}>
-      <mesh><boxGeometry args={[0.8, 0.04, 0.25]} /><meshStandardMaterial color="#ffffff" /></mesh>
-    </group>
-  );
-}
-
-// 做日光浴的遊客與躺椅
 function Sunbather({ position }) {
   return (
     <group position={position}>
       <mesh rotation={[0.2, 0, 0]} position={[0, 0.05, 0]}>
-        <boxGeometry args={[0.7, 0.08, 1.2]} />
-        <meshStandardMaterial color="#f43f5e" />
+        <boxGeometry args={[0.7, 0.08, 1.2]} /><meshStandardMaterial color="#f43f5e" />
       </mesh>
       <mesh position={[0, 0.2, -0.2]}>
-        <capsuleGeometry args={[0.22, 0.5, 8, 12]} />
-        <meshStandardMaterial color="#fcd34d" />
+        <capsuleGeometry args={[0.22, 0.5, 8, 12]} /><meshStandardMaterial color="#fcd34d" />
       </mesh>
     </group>
   );
 }
 
 // ==========================================
-// 5. 四大核心建築
+// 5. 四大建築與島嶼群
 // ==========================================
 function DetailedBuildings() {
   const { activeModule, setActiveModule, setModalOpen, showLabels } = useIslandStore();
@@ -302,7 +229,6 @@ function DetailedBuildings() {
       <group position={[-5.2, 0, -3.2]} onClick={(e) => handleSelect('theory', e)}>
         <mesh position={[0, 0.2, 0]} receiveShadow castShadow><boxGeometry args={[3.4, 0.4, 3.0]} /><meshStandardMaterial color="#e6ccb2" /></mesh>
         <mesh position={[0, 1.1, 0]} castShadow><boxGeometry args={[2.8, 1.4, 2.4]} /><meshStandardMaterial color="#fff8f0" /></mesh>
-        <mesh position={[0, 1.9, 0]} rotation={[0, Math.PI / 4, 0]} castShadow><cylinderGeometry args={[1.6, 2.3, 0.5, 4]} /><meshStandardMaterial color="#e05a47" /></mesh>
         {showLabels && (
           <Html position={[0, 3.8, 0]} center distanceFactor={18}>
             <div className={`px-3 py-1 rounded-full text-xs font-extrabold shadow-lg border cursor-pointer whitespace-nowrap ${activeModule === 'theory' ? 'bg-rose-600 text-white' : 'bg-white/95 text-slate-800'}`}>
@@ -315,7 +241,6 @@ function DetailedBuildings() {
       <group position={[5.2, 0, -3.2]} onClick={(e) => handleSelect('corpus', e)}>
         <mesh position={[0, 0.2, 0]} receiveShadow castShadow><boxGeometry args={[3.4, 0.4, 3.0]} /><meshStandardMaterial color="#cbd5e1" /></mesh>
         <mesh position={[-0.4, 1.5, 0]} castShadow><boxGeometry args={[2.0, 2.2, 2.0]} /><meshStandardMaterial color="#f1f5f9" /></mesh>
-        <mesh position={[0.95, 1.1, 0.2]} castShadow><cylinderGeometry args={[0.65, 0.65, 1.4, 20]} /><meshStandardMaterial color="#2b7a78" /></mesh>
         {showLabels && (
           <Html position={[0, 3.8, 0]} center distanceFactor={18}>
             <div className={`px-3 py-1 rounded-full text-xs font-extrabold shadow-lg border cursor-pointer whitespace-nowrap ${activeModule === 'corpus' ? 'bg-teal-700 text-white' : 'bg-white/95 text-slate-800'}`}>
@@ -328,7 +253,6 @@ function DetailedBuildings() {
       <group position={[-4.8, 0, 3.8]} onClick={(e) => handleSelect('policy', e)}>
         <mesh position={[0, 0.2, 0]} receiveShadow castShadow><boxGeometry args={[3.6, 0.4, 3.2]} /><meshStandardMaterial color="#e2e8f0" /></mesh>
         <mesh position={[0, 1.15, -0.1]} castShadow><boxGeometry args={[2.8, 1.5, 2.2]} /><meshStandardMaterial color="#fdfbf7" /></mesh>
-        <mesh position={[0, 2.1, -0.1]} castShadow><sphereGeometry args={[1.05, 20, 14, 0, Math.PI * 2, 0, Math.PI / 2]} /><meshStandardMaterial color="#52b788" /></mesh>
         {showLabels && (
           <Html position={[0, 3.8, 0]} center distanceFactor={18}>
             <div className={`px-3 py-1 rounded-full text-xs font-extrabold shadow-lg border cursor-pointer whitespace-nowrap ${activeModule === 'policy' ? 'bg-blue-600 text-white' : 'bg-white/95 text-slate-800'}`}>
@@ -341,7 +265,6 @@ function DetailedBuildings() {
       <group position={[4.8, 0, 3.8]} onClick={(e) => handleSelect('systems', e)}>
         <mesh position={[0, 0.2, 0]} receiveShadow castShadow><boxGeometry args={[3.5, 0.4, 3.2]} /><meshStandardMaterial color="#fed7aa" /></mesh>
         <mesh position={[-0.3, 1.2, 0]} castShadow><boxGeometry args={[2.3, 1.6, 2.2]} /><meshStandardMaterial color="#fffbeb" /></mesh>
-        <mesh position={[-0.3, 2.3, 0]} rotation={[0, Math.PI / 4, 0]} castShadow><coneGeometry args={[1.9, 0.9, 4]} /><meshStandardMaterial color="#f59e0b" /></mesh>
         {showLabels && (
           <Html position={[0, 3.8, 0]} center distanceFactor={18}>
             <div className={`px-3 py-1 rounded-full text-xs font-extrabold shadow-lg border cursor-pointer whitespace-nowrap ${activeModule === 'systems' ? 'bg-amber-500 text-white' : 'bg-amber-50/95 text-amber-900'}`}>
@@ -351,18 +274,6 @@ function DetailedBuildings() {
         )}
       </group>
     </>
-  );
-}
-
-// ==========================================
-// 6. 海洋與衛星島嶼（綠能風車島有橋相連，名稱無「備用」）
-// ==========================================
-function CuteTree({ position, scale = 1, color = '#52b788' }) {
-  return (
-    <group position={position} scale={[scale, scale, scale]}>
-      <mesh position={[0, 0.4, 0]} castShadow><cylinderGeometry args={[0.12, 0.18, 0.8, 10]} /><meshStandardMaterial color="#9c6644" /></mesh>
-      <mesh position={[0, 1.0, 0]} castShadow><sphereGeometry args={[0.55, 14, 14]} /><meshStandardMaterial color={color} /></mesh>
-    </group>
   );
 }
 
@@ -380,28 +291,23 @@ function OceanAndSatelliteIslands() {
     <group>
       {/* 燈塔觀測站島 */}
       <group position={[-16.5, -0.3, -11.5]}>
-        <mesh position={[0, -0.3, 0]} receiveShadow><cylinderGeometry args={[3.6, 4.2, 1.2, 24]} /><meshStandardMaterial color="#95d5b2" /></mesh>
-        <mesh position={[0, 1.2, 0]} castShadow><cylinderGeometry args={[0.45, 0.75, 2.4, 16]} /><meshStandardMaterial color="#ffffff" /></mesh>
-        <mesh position={[0, 2.95, 0]} castShadow><coneGeometry args={[0.6, 0.5, 16]} /><meshStandardMaterial color="#e05a47" /></mesh>
+        <mesh position={[0, -0.3, 0]} receiveShadow><cylinderGeometry args={[3.6, 4.2, 1.2, 20]} /><meshStandardMaterial color="#95d5b2" /></mesh>
         {showLabels && (
-          <Html position={[0, 3.8, 0]} center distanceFactor={28}>
-            <div className="bg-white/85 px-2.5 py-0.5 rounded-full text-[10px] font-bold text-slate-600 shadow whitespace-nowrap">🏝️ 燈塔觀測站島</div>
+          <Html position={[0, 2.5, 0]} center distanceFactor={28}>
+            <div className="bg-white/85 px-2 py-0.5 rounded-full text-[10px] font-bold text-slate-600 shadow whitespace-nowrap">🏝️ 燈塔觀測站島</div>
           </Html>
         )}
       </group>
 
-      {/* 綠能風車島（上方有建築與風車，且有木橋與本島相連） */}
+      {/* 綠能風車島（有木橋與本島相連） */}
       <group position={[17.5, -0.3, -10.5]}>
-        <mesh position={[0, -0.3, 0]} receiveShadow><cylinderGeometry args={[4.0, 4.6, 1.2, 24]} /><meshStandardMaterial color="#74c69d" /></mesh>
-        {/* 風車建築 */}
-        <mesh position={[0, 1.5, 0]} castShadow><cylinderGeometry args={[0.18, 0.35, 2.8, 12]} /><meshStandardMaterial color="#f8fafc" /></mesh>
+        <mesh position={[0, -0.3, 0]} receiveShadow><cylinderGeometry args={[4.0, 4.6, 1.2, 20]} /><meshStandardMaterial color="#74c69d" /></mesh>
         <group position={[0, 2.7, 0.25]} ref={windmillRef}>
           <mesh><boxGeometry args={[2.4, 0.18, 0.05]} /><meshStandardMaterial color="#ffffff" /></mesh>
-          <mesh rotation={[0, 0, Math.PI / 2]}><boxGeometry args={[2.4, 0.18, 0.05]} /><meshStandardMaterial color="#ffffff" /></mesh>
         </group>
         {showLabels && (
-          <Html position={[0, 4.2, 0]} center distanceFactor={28}>
-            <div className="bg-white/85 px-2.5 py-0.5 rounded-full text-[10px] font-bold text-slate-600 shadow whitespace-nowrap">🏝️ 綠能風車島</div>
+          <Html position={[0, 3.5, 0]} center distanceFactor={28}>
+            <div className="bg-white/85 px-2 py-0.5 rounded-full text-[10px] font-bold text-slate-600 shadow whitespace-nowrap">🏝️ 綠能風車島</div>
           </Html>
         )}
       </group>
@@ -410,34 +316,12 @@ function OceanAndSatelliteIslands() {
       <group position={[11.5, -0.3, -5.5]} rotation={[0, -0.5, 0]}>
         <mesh castShadow><boxGeometry args={[7.0, 0.15, 0.8]} /><meshStandardMaterial color="#b08968" /></mesh>
       </group>
-
-      {/* 櫻花沙龍島 */}
-      <group position={[16.5, -0.3, 11.5]}>
-        <mesh position={[0, -0.3, 0]} receiveShadow><cylinderGeometry args={[3.4, 4.0, 1.1, 24]} /><meshStandardMaterial color="#95d5b2" /></mesh>
-        <CuteTree position={[-1.2, 0.2, -0.5]} scale={1.1} color="#f472b6" />
-        <CuteTree position={[1.3, 0.2, 0.8]} scale={0.95} color="#f9a8d4" />
-        {showLabels && (
-          <Html position={[0, 3.0, 0]} center distanceFactor={28}>
-            <div className="bg-white/85 px-2.5 py-0.5 rounded-full text-[10px] font-bold text-slate-600 shadow whitespace-nowrap">🏝️ 櫻花沙龍島</div>
-          </Html>
-        )}
-      </group>
-
-      {/* 遠洋港灣島 */}
-      <group position={[-16.0, -0.3, 11.0]}>
-        <mesh position={[0, -0.3, 0]} receiveShadow><cylinderGeometry args={[3.2, 3.8, 1.1, 24]} /><meshStandardMaterial color="#95d5b2" /></mesh>
-        {showLabels && (
-          <Html position={[0, 2.8, 0]} center distanceFactor={28}>
-            <div className="bg-white/85 px-2.5 py-0.5 rounded-full text-[10px] font-bold text-slate-600 shadow whitespace-nowrap">🏝️ 遠洋港灣島</div>
-          </Html>
-        )}
-      </group>
     </group>
   );
 }
 
 // ==========================================
-// 7. 3D 場景組裝
+// 6. 主場景組裝
 // ==========================================
 function IslandScene({ controlsRef }) {
   const { viewport } = useThree();
@@ -451,63 +335,42 @@ function IslandScene({ controlsRef }) {
   return (
     <>
       <color attach="background" args={['#bae6fd']} />
-      <fog attach="fog" args={['#bae6fd', 35, 70]} />
       <ambientLight intensity={1.35} color="#fffcf2" />
       <directionalLight position={[18, 35, 22]} intensity={1.65} color="#fff8e7" castShadow />
 
       <group scale={[responsiveScale, responsiveScale, responsiveScale]} position={[0, -0.5, 0]}>
-        {/* 海洋與島嶼群 */}
         <mesh position={[0, -1.25, 0]} receiveShadow>
-          <cylinderGeometry args={[65, 65, 0.8, 64]} />
+          <cylinderGeometry args={[65, 65, 0.8, 32]} />
           <meshStandardMaterial color="#38bdf8" roughness={0.25} />
         </mesh>
 
         <OceanAndSatelliteIslands />
         <CargoShip startZ={-8} speed={0.9} flagColor="#ef4444" />
-        <CargoShip startZ={10} speed={0.75} flagColor="#3b82f6" />
-        <LuxuryYacht startZ={-2} speed={1.1} />
         <SurferAndDog angleOffset={0} radius={11.2} />
-        <FlyingSeagulls />
 
         <Float speed={0.5} rotationIntensity={0.008} floatIntensity={0.03}>
-          <mesh position={[0, -0.45, 0]} receiveShadow><cylinderGeometry args={[10.6, 10.2, 0.9, 48]} /><meshStandardMaterial color="#95d5b2" roughness={0.65} /></mesh>
-          <mesh position={[0, -0.95, 0]}><cylinderGeometry args={[10.9, 10.1, 0.4, 48]} /><meshStandardMaterial color="#f5ebe0" /></mesh>
-          
-          {/* 日光浴區 */}
+          <mesh position={[0, -0.45, 0]} receiveShadow><cylinderGeometry args={[10.6, 10.2, 0.9, 32]} /><meshStandardMaterial color="#95d5b2" /></mesh>
           <Sunbather position={[7.5, 0.05, 4.0]} />
-          <Sunbather position={[8.2, 0.05, 3.5]} />
-
           <DetailedBuildings />
           <SafePathWalker data={{ pathIndex: 0, speed: 0.8, role: '行人 A', shirt: '#3b82f6', bottom: '#1e293b', hair: '#1e293b' }} />
-          <SafePathWalker data={{ pathIndex: 1, speed: 0.75, role: '行人 B', shirt: '#ec4899', bottom: '#be185d', hair: '#451a03' }} />
 
           {showSynergyLines && (
-            <group>
-              <QuadraticBezierLine start={[-5.2, 2.5, -3.2]} end={[5.2, 2.5, -3.2]} mid={[0, 5.5, -3.2]} color="#e05a47" lineWidth={2} dashed dashScale={2} />
-            </group>
+            <QuadraticBezierLine start={[-5.2, 2.5, -3.2]} end={[5.2, 2.5, -3.2]} mid={[0, 5.5, -3.2]} color="#e05a47" lineWidth={2} dashed />
           )}
         </Float>
       </group>
 
-      <OrbitControls
-        ref={controlsRef}
-        enablePan={true}
-        enableZoom={true}
-        maxPolarAngle={Math.PI / 2.15}
-        minDistance={3.5}
-        maxDistance={52}
-        target={[0, 0.2, 0]}
-      />
+      <OrbitControls ref={controlsRef} enablePan enableZoom minDistance={3.5} maxDistance={52} target={[0, 0.2, 0]} />
     </>
   );
 }
 
 // ==========================================
-// 8. 頂層介面 App
+// 7. 頂層 App 主元件
 // ==========================================
 export default function App() {
   const controlsRef = useRef();
-  const { activeModule, setActiveModule, isModalOpen, setModalOpen, persona, setPersona, showLabels, toggleLabels, showSynergyLines, toggleSynergyLines, isPaused, togglePause } = useIslandStore();
+  const { activeModule, setActiveModule, isModalOpen, setModalOpen, showLabels, toggleLabels, showSynergyLines, toggleSynergyLines, isPaused, togglePause } = useIslandStore();
   const mod = activeModule ? researchModules[activeModule] : null;
 
   return (
@@ -524,7 +387,7 @@ export default function App() {
             <span className="text-2xl font-black tracking-tight text-[#e05a47]">FLAME-EAGLE</span>
             <span className="text-sm font-extrabold text-slate-800">炎鷲橙果島</span>
           </div>
-          <p className="text-[11px] font-bold text-slate-500 mt-0.5">ACADEMIC & AI ARCHIPELAGO · 海洋度假與綠能風車島</p>
+          <p className="text-[11px] font-bold text-slate-500 mt-0.5">ACADEMIC & AI ARCHIPELAGO</p>
         </div>
       </div>
 
@@ -532,9 +395,6 @@ export default function App() {
         <button onClick={toggleLabels} className={`px-3 py-1.5 rounded-full text-xs font-bold ${showLabels ? 'bg-slate-800 text-white' : 'text-slate-600'}`}>🏷️ 名牌</button>
         <button onClick={toggleSynergyLines} className={`px-3 py-1.5 rounded-full text-xs font-bold ${showSynergyLines ? 'bg-slate-800 text-white' : 'text-slate-600'}`}>🔗 協作線</button>
         <button onClick={togglePause} className={`px-3 py-1.5 rounded-full text-xs font-bold ${isPaused ? 'bg-rose-600 text-white' : 'text-slate-600'}`}>{isPaused ? '▶️ 繼續' : '⏸️ 暫停'}</button>
-        <select value={persona} onChange={(e) => setPersona(e.target.value)} className="bg-stone-100 text-slate-700 text-xs font-bold px-3 py-1.5 rounded-full border border-stone-200">
-          <option value="all">🧭 全方位探索者</option>
-        </select>
       </div>
 
       {isModalOpen && mod && (
@@ -548,30 +408,6 @@ export default function App() {
               <h2 className="text-xl font-black text-slate-900">{mod.title}</h2>
               <p className="text-xs text-slate-600 mt-2 leading-relaxed">{mod.summary}</p>
             </div>
-            {mod.categories && (
-              <div className="space-y-3">
-                {mod.categories.map((cat, cIdx) => (
-                  <div key={cIdx} className="space-y-1.5">
-                    <div className="text-[11px] font-extrabold text-slate-400 uppercase">{cat.name}</div>
-                    {cat.list.map((item, iIdx) => (
-                      <div key={iIdx} className="bg-white border border-stone-200 rounded-xl p-2.5 text-xs text-slate-700 font-medium shadow-sm flex items-start gap-2">
-                        <span className="text-[#e05a47] font-black">●</span><span>{item}</span>
-                      </div>
-                    ))}
-                  </div>
-                ))}
-              </div>
-            )}
-            {mod.isSystems && (
-              <div className="space-y-2.5">
-                {mod.links.map((link, idx) => (
-                  <a key={idx} href={link.url} target="_blank" rel="noreferrer" className="block bg-white hover:bg-rose-50 border border-stone-200 hover:border-[#e05a47] p-3.5 rounded-2xl shadow-sm">
-                    <div className="flex items-center justify-between"><span className="text-xs font-extrabold text-slate-800">{link.name}</span><span className="text-[10px] font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">{link.tag} ↗</span></div>
-                    <p className="text-[11px] text-slate-500 mt-1">{link.desc}</p>
-                  </a>
-                ))}
-              </div>
-            )}
           </div>
         </div>
       )}
@@ -581,7 +417,6 @@ export default function App() {
           <div className="border-b border-stone-200 pb-3.5 mb-4">
             <h2 className="text-[10px] font-black text-slate-400 tracking-widest uppercase">THE RESEARCH INDEX</h2>
             <p className="text-lg font-black text-slate-800 mt-0.5">把理論與應用，連起來。</p>
-            <p className="text-xs text-slate-500 mt-1">綠能風車島、木橋連通、海上商船世界</p>
           </div>
           <div className="space-y-2.5">
             {Object.entries(researchModules).map(([key, value]) => {
