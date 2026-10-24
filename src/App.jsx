@@ -3269,7 +3269,7 @@ export default function App() {
               </span>
             </div>
             <p className="text-[11px] font-medium text-slate-500 mt-1">
-              拱橋 · 斜張橋 · 原木橋 · 分流海洋生態群島
+              關於人、語言與社會...
             </p>
           </div>
 
