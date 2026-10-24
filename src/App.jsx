@@ -517,7 +517,7 @@ const CRUISE_INTERNATIONAL_MODULE = {
   code: 'INTERNATIONAL CONFERENCES OUTSIDE TAIWAN',
   title: '海外國際會議發表篇目',
   shortTitle: '海外國際會議發表',
-  summary: '巡航世界八國文化，彙整於西班牙、捷克、美國、加拿大、日本與泰國發表之臺灣以外國際會議論文。',
+  summary: '巡航世界 接軌國際。',
   quote: '「從臺灣南島語、華語音變到地方議會言談，將本土實證研究推向世界學術舞台。」',
   stats: { itemsCount: '10 篇海外發表', synergyCount: '3 大國際區域' },
   categories: [
@@ -547,7 +547,7 @@ const CRUISE_INTERNATIONAL_MODULE = {
       ],
     },
     {
-      name: '二、東北亞（日本東京、京都）國際會議發表',
+      name: '二、東北亞（日本）國際會議發表',
       list: [
         {
           type: 'conf',
