@@ -17,25 +17,25 @@ function IslandScene() {
 
       {/* 飄浮裝飾雲朵 */}
       <Float speed={2} rotationIntensity={0.2} floatIntensity={0.5}>
-        <mesh position={[-8, 6, -6]}><sphereGeometry args={[1.2, 16, 16]} /><meshStandardMaterial color="#ffffff" transparent opacity={0.25} /></mesh>
-        <mesh position={[9, 5, 4]}><sphereGeometry args={[1.5, 16, 16]} /><meshStandardMaterial color="#ffffff" transparent opacity={0.2} /></mesh>
+        <mesh position={[-10, 7, -6]}><sphereGeometry args={[1.5, 16, 16]} /><meshStandardMaterial color="#ffffff" transparent opacity={0.25} /></mesh>
+        <mesh position={[11, 6, 5]}><sphereGeometry args={[1.8, 16, 16]} /><meshStandardMaterial color="#ffffff" transparent opacity={0.2} /></mesh>
       </Float>
 
-      {/* 主島嶼與精緻環境 */}
+      {/* 主島嶼與建築群（整體放大 1.3 倍，讓畫面更飽滿） */}
       <Float speed={1} rotationIntensity={0.05} floatIntensity={0.15}>
-        {/* 島嶼青草地 */}
+        {/* 島嶼青草地 (半徑從 11 放大到 13) */}
         <mesh position={[0, -1, 0]} receiveShadow>
-          <cylinderGeometry args={[11, 9.5, 2.2, 32]} />
+          <cylinderGeometry args={[13, 11.5, 2.2, 32]} />
           <meshStandardMaterial color="#065f46" roughness={0.5} />
         </mesh>
         {/* 島嶼土壤層 */}
         <mesh position={[0, -2.3, 0]}>
-          <cylinderGeometry args={[9.5, 8.8, 1.6, 32]} />
+          <cylinderGeometry args={[11.5, 10.5, 1.6, 32]} />
           <meshStandardMaterial color="#78350f" roughness={0.8} />
         </mesh>
 
         {/* 建築一：理論語言學 (精靈藏書閣) */}
-        <group position={[-4.5, 0, -2.5]} onClick={(e) => { e.stopPropagation(); setActiveModule('theory'); setModalOpen(true); }}>
+        <group position={[-5.5, 0, -3]} scale={[1.2, 1.2, 1.2]} onClick={(e) => { e.stopPropagation(); setActiveModule('theory'); setModalOpen(true); }}>
           <mesh position={[0, 0.9, 0]} castShadow>
             <boxGeometry args={[2.2, 1.8, 2.2]} />
             <meshStandardMaterial color="#fef3c7" roughness={0.3} />
@@ -50,7 +50,7 @@ function IslandScene() {
         </group>
 
         {/* 建築二：計量與語料庫 (數據資料塔) */}
-        <group position={[4.5, 0, -2.5]} onClick={(e) => { e.stopPropagation(); setActiveModule('corpus'); setModalOpen(true); }}>
+        <group position={[5.5, 0, -3]} scale={[1.2, 1.2, 1.2]} onClick={(e) => { e.stopPropagation(); setActiveModule('corpus'); setModalOpen(true); }}>
           <mesh position={[0, 1, 0]} castShadow>
             <boxGeometry args={[2, 2.2, 2]} />
             <meshStandardMaterial color="#dbeafe" roughness={0.3} />
@@ -65,7 +65,7 @@ function IslandScene() {
         </group>
 
         {/* 建築三：社會政策智庫 (政策研究所) */}
-        <group position={[0, 0, 4]} onClick={(e) => { e.stopPropagation(); setActiveModule('policy'); setModalOpen(true); }}>
+        <group position={[0, 0, 5]} scale={[1.2, 1.2, 1.2]} onClick={(e) => { e.stopPropagation(); setActiveModule('policy'); setModalOpen(true); }}>
           <mesh position={[0, 0.9, 0]} castShadow>
             <boxGeometry args={[2.4, 1.8, 2.4]} />
             <meshStandardMaterial color="#d1fae5" roughness={0.3} />
@@ -80,7 +80,7 @@ function IslandScene() {
         </group>
 
         {/* 建築四：AI 實踐工坊 (中央發光魔法水晶塔) */}
-        <group position={[0, 0, 0]} onClick={(e) => { e.stopPropagation(); setActiveModule('systems'); setModalOpen(true); }}>
+        <group position={[0, 0, 0]} scale={[1.3, 1.3, 1.3]} onClick={(e) => { e.stopPropagation(); setActiveModule('systems'); setModalOpen(true); }}>
           <mesh position={[0, 0.9, 0]} castShadow>
             <cylinderGeometry args={[1.2, 1.4, 1.8, 16]} />
             <meshStandardMaterial color="#ffffff" roughness={0.2} />
@@ -96,14 +96,15 @@ function IslandScene() {
       </Float>
 
       {/* 地面柔和陰影 */}
-      <ContactShadows position={[0, -2.4, 0]} opacity={0.6} scale={30} blur={2.5} far={4} />
+      <ContactShadows position={[0, -2.4, 0]} opacity={0.6} scale={35} blur={2.5} far={4} />
 
       {/* 電影級發光後處理 */}
       <EffectComposer>
         <Bloom luminanceThreshold={0.6} luminanceSmoothing={0.9} intensity={1.2} />
       </EffectComposer>
 
-      <OrbitControls enablePan={true} enableZoom={true} maxPolarAngle={Math.PI / 2 - 0.05} minDistance={15} maxDistance={40} />
+      {/* 限制攝影機縮放範圍，確保島嶼不會縮太小 */}
+      <OrbitControls enablePan={true} enableZoom={true} maxPolarAngle={Math.PI / 2 - 0.05} minDistance={10} maxDistance={28} />
     </>
   );
 }
@@ -114,7 +115,6 @@ export default function App() {
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-slate-950 text-slate-100 font-sans">
-      {/* 頂部質感導覽列 */}
       <header className="absolute top-6 left-1/2 -translate-x-1/2 z-10 bg-slate-900/85 backdrop-blur-xl border border-blue-500/30 px-8 py-3.5 rounded-full shadow-2xl flex items-center gap-8">
         <div>
           <h1 className="text-xl font-black bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">🦅 炎鷲橙果島</h1>
@@ -127,16 +127,15 @@ export default function App() {
         </select>
       </header>
 
-      {/* 底部提示 */}
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 bg-slate-900/90 backdrop-blur-md border border-slate-700/60 px-6 py-2.5 rounded-full text-xs text-slate-300 pointer-events-none shadow-xl tracking-wide">
         ✨ 提示：滑鼠拖曳旋轉視角、滾輪縮放；<strong>點擊 3D 建築物或標籤</strong>開啟詳細研究成果！
       </div>
 
-      <Canvas camera={{ position: [0, 22, 28], fov: 42 }}>
+      {/* 將攝影機初始位置拉近到 [0, 14, 18]，讓島嶼放大呈現 */}
+      <Canvas camera={{ position: [0, 14, 18], fov: 42 }}>
         <IslandScene />
       </Canvas>
 
-      {/* 高質感毛玻璃互動彈窗 */}
       {isModalOpen && mod && (
         <div className="absolute inset-0 bg-slate-950/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
           <div className="bg-slate-900/95 border border-blue-500/40 w-full max-w-xl rounded-3xl p-8 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200">
