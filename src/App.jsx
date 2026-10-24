@@ -1,9 +1,49 @@
-import React from 'react';
-import { Canvas } from '@react-three/fiber';
+import React, { useRef } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Float, Html, ContactShadows } from '@react-three/drei';
 import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import { useIslandStore } from './store/islandStore';
 import { researchModules } from './data/researchData';
+import * as THREE from 'three';
+
+// 🚶‍♂️ 可愛動態漫步小人偶元件
+function WalkingCharacter({ startPos, color, speed = 1, radius = 3 }) {
+  const charRef = useRef();
+  
+  useFrame(({ clock }) => {
+    const t = clock.getElapsedTime() * speed;
+    // 讓小人偶在島嶼上繞圈或依循特定軌跡漫步，並加上上下微跳的走路感
+    const x = startPos[0] + Math.cos(t * 0.8) * radius;
+    const z = startPos[2] + Math.sin(t * 0.8) * radius;
+    const y = startPos[1] + Math.abs(Math.sin(t * 4)) * 0.15; // 走路時上下彈跳
+    
+    if (charRef.current) {
+      charRef.current.position.set(x, y, z);
+      // 讓小人偶面向前進方向
+      charRef.current.rotation.y = -t * 0.8 + Math.PI / 2;
+    }
+  });
+
+  return (
+    <group ref={charRef} position={startPos} scale={[0.6, 0.6, 0.6]}>
+      {/* 身體 */}
+      <mesh position={[0, 0.6, 0]} castShadow>
+        <capsuleGeometry args={[0.3, 0.4, 8, 16]} />
+        <meshStandardMaterial color={color} roughness={0.4} />
+      </mesh>
+      {/* 頭部 */}
+      <mesh position={[0, 1.2, 0]} castShadow>
+        <sphereGeometry args={[0.35, 16, 16]} />
+        <meshStandardMaterial color="#fde68a" roughness={0.3} />
+      </mesh>
+      {/* 學術小背包 */}
+      <mesh position={[0, 0.6, -0.25]} castShadow>
+        <boxGeometry args={[0.35, 0.4, 0.2]} />
+        <meshStandardMaterial color="#b45309" roughness={0.5} />
+      </mesh>
+    </group>
+  );
+}
 
 function IslandScene() {
   const { setActiveModule, setModalOpen } = useIslandStore();
@@ -21,7 +61,7 @@ function IslandScene() {
         <mesh position={[19, 11, 8]}><sphereGeometry args={[3, 16, 16]} /><meshStandardMaterial color="#ffffff" transparent opacity={0.1} /></mesh>
       </Float>
 
-      {/* 3D 群島本體：整體放大 2.4 倍，並向下對齊螢幕正中央 */}
+      {/* 3D 群島本體 */}
       <group scale={[2.4, 2.4, 2.4]} position={[0, -1.2, 0]}>
         <Float speed={1} rotationIntensity={0.03} floatIntensity={0.08}>
           {/* 島嶼青草地 */}
@@ -34,6 +74,11 @@ function IslandScene() {
             <cylinderGeometry args={[12, 11, 1.5, 32]} />
             <meshStandardMaterial color="#78350f" roughness={0.8} />
           </mesh>
+
+          {/* 🚶‍♂️ 加入多位在島上漫步的可愛學者/學生人偶 */}
+          <WalkingCharacter startPos={[-3, 0, -1]} color="#3b82f6" speed={0.9} radius={2} />
+          <WalkingCharacter startPos={[3, 0, 2]} color="#10b981" speed={1.1} radius={2.5} />
+          <WalkingCharacter startPos={[0, 0, -3]} color="#ef4444" speed={0.8} radius={1.8} />
 
           {/* 建築一：理論語言學 */}
           <group position={[-5.2, 0, -2.8]} onClick={(e) => { e.stopPropagation(); setActiveModule('theory'); setModalOpen(true); }}>
@@ -105,7 +150,6 @@ function IslandScene() {
         <Bloom luminanceThreshold={0.3} luminanceSmoothing={0.9} intensity={1.8} />
       </EffectComposer>
 
-      {/* 相機拉近至 [0, 3.8, 6.2]，視場角 70 確保完全撐滿螢幕 */}
       <OrbitControls enablePan={true} enableZoom={true} maxPolarAngle={Math.PI / 2 - 0.05} minDistance={4} maxDistance={12} target={[0, -0.2, 0]} />
     </>
   );
