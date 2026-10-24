@@ -1,7 +1,7 @@
 {
   "name": "flame-eagle-island",
   "private": true,
-  "version": "2.0.0",
+  "version": "2.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -13,6 +13,7 @@
     "react-dom": "^19.0.0",
     "@react-three/fiber": "^9.0.0",
     "@react-three/drei": "^10.0.0",
+    "@react-three/postprocessing": "^3.0.0",
     "three": "^0.174.0",
     "zustand": "^5.0.0",
     "lucide-react": "^1.0.0"
