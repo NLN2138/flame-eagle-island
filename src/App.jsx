@@ -137,14 +137,14 @@ const researchModules = {
     cameraPos: [0, 6.2, 9.2],
     categories: [
       {
-        name: '一、學位論文與省略理論專著',
+        name: '一、形式句法理論',
         list: [
           '限定詞組省略理論研究：從南島語觀點出發 (Toward a Theory of DP Ellipsis: A Formosan Perspective)',
           '疑問詞問句及其左緣結構之研究 (Left Periphery and Wh-questions)',
         ],
       },
       {
-        name: '二、臺灣南島語形式句法與類型學',
+        name: '二、臺灣南島語與語言類型學',
         list: [
           '南島語限定詞組省略之類型與參數研究 (Typology and parameter: DP ellipsis)',
           '論元省略與語法島修復機制研究 (Is island "repairable"? Argument drop study)',
@@ -152,7 +152,7 @@ const researchModules = {
         ],
       },
       {
-        name: '三、漢語空範疇、控制結構與製圖理論',
+        name: '三、空範疇、控制結構與製圖理論',
         list: [
           '篇章指涉與論旨角色指派機制 (Discourse Reference and Theta-role Assignment)',
           '空代名詞之分布與指涉特性研究 (Distribution and reference of empty pronoun)',
@@ -179,7 +179,7 @@ const researchModules = {
     cameraPos: [12.5, 6.0, 1.5],
     categories: [
       {
-        name: '一、學習者語料庫與語音偏誤實證',
+        name: '一、學習者語料庫與語音變異',
         list: [
           '華語學習者語料庫語音偏誤研究：以不送氣舌尖後翹舌音、舌根鼻音和輕聲為例（THCI 第一級）',
           '華語學習者輕聲偏誤及其潛在變項之相關性研究',
@@ -188,7 +188,7 @@ const researchModules = {
         ],
       },
       {
-        name: '二、華語自由變異與口語音變趨勢',
+        name: '二、華語自由變異與音變趨勢',
         list: [
           '華語自由變異的類型和趨勢：基於語音語料庫的研究（THCI 第一級）',
           '標準之外的聲音：從語料庫證據反思華語語音教學與語言規範',
@@ -204,11 +204,11 @@ const researchModules = {
         ],
       },
       {
-        name: '四、測驗詞彙常模建置與語料庫科普',
+        name: '四、評量詞彙基準建置與語言學科普',
         list: [
           '初探華語的「變」與「不變」：基於語料庫的語音研究',
           '英語學習者口語詞彙表建置與課綱字彙表改進建議',
-          '科普專論：基於語料庫的一字多音研究、口語語料庫對英語學習的啟示',
+          '科普短文：基於語料庫的一字多音研究、口語語料庫對英語學習的啟示',
         ],
       },
     ],
@@ -221,7 +221,7 @@ const researchModules = {
     code: 'THEME 03 · 社會語言學與教育政策',
     title: '語言政策講堂',
     shortTitle: '語言政策講堂',
-    summary: '結合語料庫輔助批評論述分析（CADS）與跨國教育比較，連結實證語言證據與公共政策治理。',
+    summary: '結合語料庫輔助批評論述分析與跨國教育比較，連結實證語言證據與公共政策治理。',
     quote: '「連結語言證據與公共治理：從課綱教科書體檢到國際多語教育借鑑。」',
     stats: { itemsCount: '13 項研究', synergyCount: '4 類核心主題' },
     synergyWith: ['02 語料庫花園', '04 人工智慧咖啡廳'],
@@ -229,9 +229,9 @@ const researchModules = {
     cameraPos: [-12.5, 6.0, 1.5],
     categories: [
       {
-        name: '一、政治言談與議會批評論述分析 (CADS)',
+        name: '一、言談分析與批判論述分析',
         list: [
-          '以言建國：地方議會辯論之語料庫輔助批評論述分析 (Nationhood by words: CADS)',
+          '以言建國：地方議會辯論之語料庫輔助批評論述分析',
           '地方議會政治言談中的問句句式與評價性修辭分析',
           '地方議會政治言談中的國族指涉詞：詞頻分布、共變模式與主體定位分析',
         ],
@@ -257,7 +257,7 @@ const researchModules = {
         name: '四、校園治理、飲食政策與本土語推廣',
         list: [
           '中小學營養午餐政策研究：現況、挑戰與國際借鑑',
-          '校園防疫治理經驗與國際借鑑 (How schools combat against pandemic)',
+          '校園防疫治理經驗與國際借鑑',
           '政策評論：本土語言走出校園孤島、跨國飲食教育比較',
         ],
       },
