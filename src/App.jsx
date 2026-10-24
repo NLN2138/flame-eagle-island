@@ -636,7 +636,7 @@ function SausageStand({ position, rotation = [0, 0, 0] }) {
       {showLabels && (
         <Html position={[0, 2.35, 0]} center distanceFactor={20}>
           <div className="bg-red-600/95 text-white px-2 py-0.5 rounded-full text-[9px] font-bold shadow border border-red-300 whitespace-nowrap cursor-pointer">
-            🌭 台灣烤香腸攤 (點我擲骰)
+            🌭 台灣烤香腸攤
           </div>
         </Html>
       )}
@@ -1703,7 +1703,7 @@ function TaiwaneseWhiteDolphinPod({ centerPos = [-10.0, 0, 5.5], radius = 3.8, s
       {showLabels && (
         <Html position={[0, 1.6, 0]} center distanceFactor={26}>
           <div className="bg-pink-100/95 text-pink-900 px-2.5 py-0.5 rounded-full text-[9px] font-extrabold border border-pink-300 shadow whitespace-nowrap cursor-pointer">
-            🐬 台灣白海豚群 (4隻同行)
+            🐬 台灣白海豚群
           </div>
         </Html>
       )}
@@ -1838,7 +1838,7 @@ function SoloHumpbackWhale({ position = [-15.5, -0.88, -1.5] }) {
       {showLabels && (
         <Html position={[0, 2.35, 0]} center distanceFactor={28}>
           <div className="bg-slate-900/90 text-sky-200 px-2.5 py-0.5 rounded-full text-[9px] font-bold shadow border border-sky-400 whitespace-nowrap cursor-pointer">
-            🐳 大翅鯨噴水 (單獨巡游)
+            🐳 大翅鯨噴水
           </div>
         </Html>
       )}
