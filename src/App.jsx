@@ -2911,8 +2911,8 @@ function IslandScene({ controlsRef, cruiseShipRef }) {
         <OuterSatelliteIslands />
 
         {/* ★ 分流海上運動、鯨豚與船隻（各自沿專屬固定路線行進，絕不相撞） ★ */}
-        <RouteSUPPaddler curve={supBayCurve} offset={0.0} speed={0.04} boardColor="#facc15" role="SUP 立槳玩家" />
-        <RouteSUPPaddler curve={supBayCurve} offset={0.5} speed={0.04} boardColor="#34d399" role="SUP 立槳初學者" />
+        <RouteSUPPaddler curve={supBayCurve} offset={0.0} speed={0.04} boardColor="#facc15" role="SUP 玩家" />
+        <RouteSUPPaddler curve={supBayCurve} offset={0.5} speed={0.04} boardColor="#34d399" role="SUP 初學者" />
         <TaiwaneseWhiteDolphinPod curve={whiteDolphinCurve} speed={0.032} />
         <SoloHumpbackWhale curve={humpbackCurve} speed={0.025} />
         <WhaleFamilyPod curve={whaleFamilyCurve} speed={0.022} />
