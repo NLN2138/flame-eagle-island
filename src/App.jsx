@@ -1,9 +1,47 @@
-import React from 'react';
-import { Canvas } from '@react-three/fiber';
+import React, { useRef } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Float, Html, ContactShadows } from '@react-three/drei';
 import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import { useIslandStore } from './store/islandStore';
 import { researchModules } from './data/researchData';
+import * as THREE from 'three';
+
+// 🚶‍♂️ 動態走路的小人偶元件（再次加入並完美貼合島嶼草地）
+function WalkingCharacter({ startPos, color, speed = 1, radius = 2.5 }) {
+  const charRef = useRef();
+  
+  useFrame(({ clock }) => {
+    const t = clock.getElapsedTime() * speed;
+    const x = startPos[0] + Math.cos(t * 0.7) * radius;
+    const z = startPos[2] + Math.sin(t * 0.7) * radius;
+    const y = startPos[1] + Math.abs(Math.sin(t * 3.5)) * 0.12; // 走路上下彈跳感
+    
+    if (charRef.current) {
+      charRef.current.position.set(x, y, z);
+      charRef.current.rotation.y = -t * 0.7 + Math.PI / 2;
+    }
+  });
+
+  return (
+    <group ref={charRef} position={startPos} scale={[0.55, 0.55, 0.55]}>
+      {/* 身體 */}
+      <mesh position={[0, 0.6, 0]} castShadow>
+        <capsuleGeometry args={[0.3, 0.4, 8, 16]} />
+        <meshStandardMaterial color={color} roughness={0.4} />
+      </mesh>
+      {/* 頭部 */}
+      <mesh position={[0, 1.2, 0]} castShadow>
+        <sphereGeometry args={[0.35, 16, 16]} />
+        <meshStandardMaterial color="#fde68a" roughness={0.3} />
+      </mesh>
+      {/* 學術小背包 */}
+      <mesh position={[0, 0.6, -0.25]} castShadow>
+        <boxGeometry args={[0.35, 0.4, 0.2]} />
+        <meshStandardMaterial color="#b45309" roughness={0.5} />
+      </mesh>
+    </group>
+  );
+}
 
 function IslandScene() {
   const { setActiveModule, setModalOpen } = useIslandStore();
@@ -15,7 +53,7 @@ function IslandScene() {
       <directionalLight position={[20, 40, 20]} intensity={2.5} castShadow shadow-mapSize={2048} />
       <pointLight position={[0, 15, 0]} intensity={4} color="#3b82f6" distance={30} />
 
-      {/* 3D 群島本體：完美對齊滿版視口中央 */}
+      {/* 3D 群島本體：完美滿版展開 */}
       <group scale={[2.2, 2.2, 2.2]} position={[0, -1.5, 0]}>
         <Float speed={1} rotationIntensity={0.03} floatIntensity={0.08}>
           {/* 島嶼青草地 */}
@@ -28,6 +66,10 @@ function IslandScene() {
             <cylinderGeometry args={[11.5, 10.5, 1.5, 32]} />
             <meshStandardMaterial color="#78350f" roughness={0.8} />
           </mesh>
+
+          {/* 🚶‍♂️ 動態漫步的小人偶 */}
+          <WalkingCharacter startPos={[-2.5, 0, -1]} color="#3b82f6" speed={0.9} radius={1.8} />
+          <WalkingCharacter startPos={[2.5, 0, 1.5]} color="#10b981" speed={1.1} radius={2.2} />
 
           {/* 建築一：理論語言學 */}
           <group position={[-5, 0, -2.5]} onClick={(e) => { e.stopPropagation(); setActiveModule('theory'); setModalOpen(true); }}>
@@ -115,7 +157,7 @@ export default function App() {
         </Canvas>
       </div>
 
-      {/* 2. 頂部導覽列 (模仿 HEART 政策島 Header) */}
+      {/* 2. 頂部懸浮導覽列 */}
       <header className="absolute top-4 left-6 right-6 z-20 flex justify-between items-center pointer-events-none">
         <div className="bg-white/90 backdrop-blur-md px-6 py-2.5 rounded-2xl shadow-xl border border-slate-200/80 pointer-events-auto flex items-center gap-4">
           <div>
@@ -129,7 +171,7 @@ export default function App() {
         </div>
       </header>
 
-      {/* 3. 右側固定側邊欄 (模仿 POLICY INDEX) */}
+      {/* 3. 右側懸浮固定側邊欄 (目錄) */}
       <aside className="absolute top-20 right-6 bottom-6 z-20 w-80 bg-white/90 backdrop-blur-2xl border border-slate-200/80 p-5 rounded-3xl shadow-2xl pointer-events-auto flex flex-col justify-between">
         <div>
           <div className="border-b border-slate-200 pb-3 mb-4">
@@ -163,7 +205,7 @@ export default function App() {
         </div>
       </aside>
 
-      {/* 4. 左側懸浮彈窗面板 (點擊建築後直接疊加在圖面上) */}
+      {/* 4. 左側懸浮彈窗面板 (點擊建築或右側目錄後，直接疊加在 3D 圖面上方) */}
       {isModalOpen && mod && (
         <div className="absolute top-20 left-6 z-30 w-96 bg-white/95 backdrop-blur-2xl border border-slate-200/90 rounded-3xl p-6 shadow-2xl pointer-events-auto animate-in fade-in zoom-in-95 duration-200 text-slate-800">
           <button onClick={() => setModalOpen(false)} className="absolute top-5 right-5 text-slate-400 hover:text-slate-700 bg-slate-100 w-8 h-8 rounded-full flex items-center justify-center transition-colors">✕</button>
