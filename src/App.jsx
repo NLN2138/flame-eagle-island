@@ -137,14 +137,14 @@ const researchModules = {
     cameraPos: [0, 6.2, 9.2],
     categories: [
       {
-        name: '一、學位論文與省略理論專著',
+        name: '一、形式語法理論與實證',
         list: [
           '限定詞組省略理論研究：從南島語觀點出發 (Toward a Theory of DP Ellipsis: A Formosan Perspective)',
           '疑問詞問句及其左緣結構之研究 (Left Periphery and Wh-questions)',
         ],
       },
       {
-        name: '二、臺灣南島語形式句法與類型學',
+        name: '二、臺灣南島語句法與類型學',
         list: [
           '南島語限定詞組省略之類型與參數研究 (Typology and parameter: DP ellipsis)',
           '論元省略與語法島修復機制研究 (Is island "repairable"? Argument drop study)',
