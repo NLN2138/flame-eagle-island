@@ -10,28 +10,28 @@ function IslandScene() {
 
   return (
     <>
-      <color attach="background" args={['#03050c']} />
-      <ambientLight intensity={1.8} />
-      <directionalLight position={[20, 40, 20]} intensity={2.5} castShadow shadow-mapSize={2048} />
-      <pointLight position={[0, 12, 0]} intensity={4.5} color="#3b82f6" distance={30} />
+      <color attach="background" args={['#02040a']} />
+      <ambientLight intensity={1.9} />
+      <directionalLight position={[20, 40, 20]} intensity={2.8} castShadow shadow-mapSize={2048} />
+      <pointLight position={[0, 15, 0]} intensity={5} color="#3b82f6" distance={35} />
 
       {/* 飄浮裝飾微光雲朵 */}
       <Float speed={2} rotationIntensity={0.2} floatIntensity={0.5}>
-        <mesh position={[-15, 10, -6]}><sphereGeometry args={[2.2, 16, 16]} /><meshStandardMaterial color="#ffffff" transparent opacity={0.18} /></mesh>
-        <mesh position={[16, 9, 6]}><sphereGeometry args={[2.8, 16, 16]} /><meshStandardMaterial color="#ffffff" transparent opacity={0.12} /></mesh>
+        <mesh position={[-18, 12, -8]}><sphereGeometry args={[2.5, 16, 16]} /><meshStandardMaterial color="#ffffff" transparent opacity={0.15} /></mesh>
+        <mesh position={[19, 11, 8]}><sphereGeometry args={[3, 16, 16]} /><meshStandardMaterial color="#ffffff" transparent opacity={0.1} /></mesh>
       </Float>
 
-      {/* 3D 群島本體：將整體往下微調並放大，讓島嶼完美佔滿螢幕中央 */}
-      <group scale={[1.9, 1.9, 1.9]} position={[0, -0.8, 0]}>
+      {/* 3D 群島本體：整體放大 2.4 倍，並向下對齊螢幕正中央 */}
+      <group scale={[2.4, 2.4, 2.4]} position={[0, -1.2, 0]}>
         <Float speed={1} rotationIntensity={0.03} floatIntensity={0.08}>
           {/* 島嶼青草地 */}
           <mesh position={[0, -1, 0]} receiveShadow>
-            <cylinderGeometry args={[13, 11.5, 2, 32]} />
+            <cylinderGeometry args={[13.5, 12, 2, 32]} />
             <meshStandardMaterial color="#065f46" roughness={0.5} />
           </mesh>
           {/* 島嶼土壤層 */}
           <mesh position={[0, -2.2, 0]}>
-            <cylinderGeometry args={[11.5, 10.5, 1.5, 32]} />
+            <cylinderGeometry args={[12, 11, 1.5, 32]} />
             <meshStandardMaterial color="#78350f" roughness={0.8} />
           </mesh>
 
@@ -46,7 +46,7 @@ function IslandScene() {
               <meshStandardMaterial color="#ef4444" roughness={0.2} />
             </mesh>
             <Html position={[0, 3.2, 0]} center>
-              <div className="island-badge hover:scale-105 transition-transform cursor-pointer shadow-lg">📚 理論語言學</div>
+              <div className="island-badge hover:scale-105 transition-transform cursor-pointer shadow-xl">📚 理論語言學</div>
             </Html>
           </group>
 
@@ -61,7 +61,7 @@ function IslandScene() {
               <meshStandardMaterial color="#3b82f6" roughness={0.1} emissive="#1d4ed8" emissiveIntensity={0.8} />
             </mesh>
             <Html position={[0, 3.3, 0]} center>
-              <div className="island-badge hover:scale-105 transition-transform cursor-pointer shadow-lg">📊 計量與語料庫</div>
+              <div className="island-badge hover:scale-105 transition-transform cursor-pointer shadow-xl">📊 計量與語料庫</div>
             </Html>
           </group>
 
@@ -76,7 +76,7 @@ function IslandScene() {
               <meshStandardMaterial color="#10b981" roughness={0.2} />
             </mesh>
             <Html position={[0, 3.2, 0]} center>
-              <div className="island-badge hover:scale-105 transition-transform cursor-pointer shadow-lg">🏫 社會政策智庫</div>
+              <div className="island-badge hover:scale-105 transition-transform cursor-pointer shadow-xl">🏫 社會政策智庫</div>
             </Html>
           </group>
 
@@ -88,25 +88,25 @@ function IslandScene() {
             </mesh>
             <mesh position={[0, 2.5, 0]} castShadow>
               <octahedronGeometry args={[1.1]} />
-              <meshStandardMaterial color="#f59e0b" roughness={0.1} emissive="#d97706" emissiveIntensity={1.8} />
+              <meshStandardMaterial color="#f59e0b" roughness={0.1} emissive="#d97706" emissiveIntensity={2.0} />
             </mesh>
             <Html position={[0, 3.8, 0]} center>
-              <div className="island-badge font-bold text-amber-800 bg-amber-50 border-amber-300 hover:scale-105 transition-transform cursor-pointer shadow-xl">⚡ AI 實踐工坊</div>
+              <div className="island-badge font-bold text-amber-800 bg-amber-50 border-amber-300 hover:scale-105 transition-transform cursor-pointer shadow-2xl">⚡ AI 實踐工坊</div>
             </Html>
           </group>
         </Float>
       </group>
 
       {/* 地面柔和陰影 */}
-      <ContactShadows position={[0, -4.2, 0]} opacity={0.65} scale={50} blur={3.5} far={6} />
+      <ContactShadows position={[0, -4.8, 0]} opacity={0.7} scale={60} blur={4} far={7} />
 
       {/* 電影級發光後處理 */}
       <EffectComposer>
-        <Bloom luminanceThreshold={0.4} luminanceSmoothing={0.9} intensity={1.6} />
+        <Bloom luminanceThreshold={0.3} luminanceSmoothing={0.9} intensity={1.8} />
       </EffectComposer>
 
-      {/* 相機微調視角與視場角，讓島嶼在 100% 視口中張力十足 */}
-      <OrbitControls enablePan={true} enableZoom={true} maxPolarAngle={Math.PI / 2 - 0.05} minDistance={5} maxDistance={15} target={[0, -0.5, 0]} />
+      {/* 相機拉近至 [0, 3.8, 6.2]，視場角 70 確保完全撐滿螢幕 */}
+      <OrbitControls enablePan={true} enableZoom={true} maxPolarAngle={Math.PI / 2 - 0.05} minDistance={4} maxDistance={12} target={[0, -0.2, 0]} />
     </>
   );
 }
@@ -116,11 +116,11 @@ export default function App() {
   const mod = activeModule ? researchModules[activeModule] : null;
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden bg-slate-950 text-slate-100 font-sans">
+    <div className="fixed inset-0 w-screen h-screen overflow-hidden bg-slate-950 text-slate-100 font-sans">
       
-      {/* 1. 底層：100% 絕對滿版 3D Canvas 畫布 */}
+      {/* 1. 底層：100% 強制滿版 Canvas 畫布 */}
       <div className="absolute inset-0 w-full h-full z-0">
-        <Canvas camera={{ position: [0, 5.5, 8.5], fov: 65 }}>
+        <Canvas camera={{ position: [0, 3.8, 6.2], fov: 70 }} style={{ width: '100%', height: '100%', display: 'block' }}>
           <IslandScene />
         </Canvas>
       </div>
