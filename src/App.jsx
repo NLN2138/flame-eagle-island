@@ -663,7 +663,7 @@ function SightseeingFerrySystem({ ferryCurve }) {
       scale={[0.82, 0.82, 0.82]}
       onClick={(e) => {
         e.stopPropagation();
-        setToastMessage(`⛴️ ${name}：正沿著中環專屬航道串聯四座外海無人島，完全與內灣鯨豚分流！`);
+        setToastMessage(`⛴️ ${name}：正沿著中環專屬航道串聯四座外海無人島！`);
       }}
     >
       <mesh position={[0, 0.18, 0]} castShadow>
@@ -2458,7 +2458,7 @@ function TaiwaneseWhiteDolphinPod({ curve, speed = 0.032 }) {
       ref={podRef}
       onClick={(e) => {
         e.stopPropagation();
-        setToastMessage('🐬 台灣白海豚（媽祖魚）群：4 隻粉白海豚正沿著西內灣保育航道結伴跳躍！');
+        setToastMessage('🐬 台灣白海豚（媽祖魚）群正沿著西內灣保育航道結伴跳躍！');
       }}
     >
       {podMembers.map((m, i) => (
@@ -2485,7 +2485,7 @@ function TaiwaneseWhiteDolphinPod({ curve, speed = 0.032 }) {
       {showLabels && (
         <Html position={[0, 1.6, 0]} center distanceFactor={26}>
           <div className="bg-pink-100/95 text-pink-900 px-2.5 py-0.5 rounded-full text-[9px] font-extrabold border border-pink-300 shadow whitespace-nowrap cursor-pointer">
-            🐬 台灣白海豚群 (4隻同行)
+            🐬 台灣白海豚群
           </div>
         </Html>
       )}
@@ -2586,7 +2586,7 @@ function SoloHumpbackWhale({ curve, speed = 0.025 }) {
       scale={[1.22, 1.22, 1.22]}
       onClick={(e) => {
         e.stopPropagation();
-        setToastMessage('🐳 大翅鯨（座頭鯨）噴出壯觀水柱！牠正沿著北灣專屬水道單獨巡游！');
+        setToastMessage('🐳 大翅鯨座頭鯨噴出壯觀水柱！牠正沿著北灣巡游！');
       }}
     >
       <mesh rotation={[Math.PI / 2, 0, 0]} castShadow>
@@ -2911,8 +2911,8 @@ function IslandScene({ controlsRef, cruiseShipRef }) {
         <OuterSatelliteIslands />
 
         {/* ★ 分流海上運動、鯨豚與船隻（各自沿專屬固定路線行進，絕不相撞） ★ */}
-        <RouteSUPPaddler curve={supBayCurve} offset={0.0} speed={0.04} boardColor="#facc15" role="SUP 立槳玩家 A" />
-        <RouteSUPPaddler curve={supBayCurve} offset={0.5} speed={0.04} boardColor="#34d399" role="SUP 立槳玩家 B" />
+        <RouteSUPPaddler curve={supBayCurve} offset={0.0} speed={0.04} boardColor="#facc15" role="SUP 立槳玩家" />
+        <RouteSUPPaddler curve={supBayCurve} offset={0.5} speed={0.04} boardColor="#34d399" role="SUP 立槳初學者" />
         <TaiwaneseWhiteDolphinPod curve={whiteDolphinCurve} speed={0.032} />
         <SoloHumpbackWhale curve={humpbackCurve} speed={0.025} />
         <WhaleFamilyPod curve={whaleFamilyCurve} speed={0.022} />
@@ -2942,16 +2942,16 @@ function IslandScene({ controlsRef, cruiseShipRef }) {
 
         {/* 雙向自然移動、站直朝前之多元人物與萌寵群 */}
         <UprightActor curve={hexPathOrange} offset={0.02} speed={0.028} dir={1} laneOffset={-0.22} actorType="dog_walker" shirt="#e05a47" bottom="#1e293b" petColor="#d97706" role="遛狗島主" />
-        <UprightActor curve={hexPathOrange} offset={0.28} speed={0.022} dir={-1} laneOffset={0.24} actorType="stroller_family" role="爸媽推嬰兒車" />
-        <UprightActor curve={hexPathOrange} offset={0.52} speed={0.03} dir={1} laneOffset={-0.2} actorType="umbrella" shirt="#ec4899" bottom="#be185d" umbrellaColor="#f472b6" role="撐陽傘學者" />
-        <UprightActor curve={hexPathOrange} offset={0.74} speed={0.052} dir={-1} laneOffset={0.26} actorType="jogger" shirt="#38bdf8" bottom="#0f172a" role="晨間慢跑者" />
+        <UprightActor curve={hexPathOrange} offset={0.28} speed={0.022} dir={-1} laneOffset={0.24} actorType="stroller_family" role="爸媽與嫩嬰" />
+        <UprightActor curve={hexPathOrange} offset={0.52} speed={0.03} dir={1} laneOffset={-0.2} actorType="umbrella" shirt="#ec4899" bottom="#be185d" umbrellaColor="#f472b6" role="語言學者" />
+        <UprightActor curve={hexPathOrange} offset={0.74} speed={0.052} dir={-1} laneOffset={0.26} actorType="jogger" shirt="#38bdf8" bottom="#0f172a" role="慢跑者" />
         <UprightActor curve={hexPathOrange} offset={0.88} speed={0.018} dir={1} laneOffset={-0.24} actorType="elder" shirt="#64748b" bottom="#334155" hair="#e2e8f0" role="拄拐杖阿公" />
         <UprightActor curve={hexPathOrange} offset={0.15} speed={0.06} dir={1} laneOffset={0.25} actorType="bike" shirt="#10b981" umbrellaColor="#f43f5e" role="騎腳踏車青年" />
         <UprightActor curve={hexPathOrange} offset={0.62} speed={0.055} dir={-1} laneOffset={-0.25} actorType="scooter" shirt="#a855f7" umbrellaColor="#facc15" role="滑板車小妹" />
 
         <UprightActor curve={hexPathCorpus} offset={0.1} speed={0.032} dir={1} laneOffset={-0.2} actorType="walker" shirt="#0d9488" bottom="#334155" role="語料庫研究員" />
-        <UprightActor curve={hexPathCorpus} offset={0.45} speed={0.028} dir={-1} laneOffset={0.22} actorType="umbrella" shirt="#8b5cf6" bottom="#4c1d95" umbrellaColor="#38bdf8" role="撐傘女學生" />
-        <UprightActor curve={hexPathCorpus} offset={0.78} speed={0.052} dir={1} laneOffset={0.22} actorType="jogger" shirt="#f97316" bottom="#1e293b" role="活力慢跑生" />
+        <UprightActor curve={hexPathCorpus} offset={0.45} speed={0.028} dir={-1} laneOffset={0.22} actorType="umbrella" shirt="#8b5cf6" bottom="#4c1d95" umbrellaColor="#38bdf8" role="活力大學生" />
+        <UprightActor curve={hexPathCorpus} offset={0.78} speed={0.052} dir={1} laneOffset={0.22} actorType="jogger" shirt="#f97316" bottom="#1e293b" role="健行壯年人" />
 
         <UprightActor curve={hexPathPolicy} offset={0.2} speed={0.02} dir={-1} laneOffset={-0.2} actorType="elder" shirt="#d97706" bottom="#78350f" hair="#cbd5e1" role="拄拐杖阿嬤" />
         <UprightActor curve={hexPathPolicy} offset={0.55} speed={0.028} dir={1} laneOffset={0.22} actorType="dog_walker" shirt="#2563eb" bottom="#1e3a8a" petColor="#fef3c7" role="遛小白狗居民" />
