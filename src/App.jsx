@@ -32,7 +32,7 @@ const useIslandStore = create((set) => ({
   toggleSynergyLines: () => set((s) => ({ showSynergyLines: !s.showSynergyLines })),
   isPaused: false,
   togglePause: () => set((s) => ({ isPaused: !s.isPaused })),
-  toastMessage: '🍊 歡迎來到 EUREKA！橙果島！點擊郵輪、渡輪、攤販或鯨豚可觸發互動彩蛋',
+  toastMessage: '🍊 歡迎來到 EUREKA！橙果島！三座特色大橋與分流海上航線已全面啟航',
   setToastMessage: (msg) => set({ toastMessage: msg }),
   cameraFlight: null,
   triggerCameraFlight: (pos, target) =>
@@ -325,7 +325,7 @@ const researchModules = {
 };
 
 // ==========================================
-// 4. 道路、跨島橋樑與外海渡輪/郵輪航線產生器
+// 4. 陸地與海洋無碰撞固定路線產生器 (All Non-Overlapping Closed Curves)
 // ==========================================
 function createHexagonPath(cx, cz, radius) {
   const pts = [];
@@ -336,6 +336,17 @@ function createHexagonPath(cx, cz, radius) {
   return new THREE.CatmullRomCurve3(pts, true, 'catmullrom', 0.08);
 }
 
+// 产生平滑封閉橢圓海面航道（確保每種海洋生物/運動/船隻都在專屬水域，絕不碰撞）
+function createOvalSeaRoute(cx, cz, rx, rz, y = -0.82) {
+  const pts = [];
+  for (let i = 0; i < 16; i++) {
+    const angle = (i / 16) * Math.PI * 2;
+    pts.push(new THREE.Vector3(cx + Math.cos(angle) * rx, y, cz + Math.sin(angle) * rz));
+  }
+  return new THREE.CatmullRomCurve3(pts, true, 'catmullrom', 0.5);
+}
+
+// 陸地跨島橋樑大巡迴路徑
 function createGrandArchipelagoPath() {
   const pts = [
     new THREE.Vector3(0, 0.05, 4.3),
@@ -370,53 +381,268 @@ function createGrandArchipelagoPath() {
   return new THREE.CatmullRomCurve3(pts, true, 'catmullrom', 0.12);
 }
 
-// ★ 新增：連結主島與外海四座無人島的觀光渡輪航線 ★
+// 觀光渡輪專屬中環跳島航線 (完全避開內灣運動區、三座橋樑與外海郵輪)
 function createOuterFerryRoute() {
   const pts = [
-    new THREE.Vector3(-5.8, -0.82, 4.2),   // 橙果主島西側碼頭
-    new THREE.Vector3(-15.5, -0.82, 12.0), // 遠洋港灣島
-    new THREE.Vector3(-20.0, -0.82, 0.0),  // 西側外海水道
-    new THREE.Vector3(-18.5, -0.82, -12.0),// 燈塔觀測站島
-    new THREE.Vector3(0.0, -0.82, -14.5),  // 北側外海水道
-    new THREE.Vector3(18.5, -0.82, -12.0), // 綠能風車島
-    new THREE.Vector3(20.0, -0.82, 0.0),   // 東側外海水道
-    new THREE.Vector3(17.0, -0.82, 12.0),  // 櫻花沙龍島
-    new THREE.Vector3(6.2, -0.82, 6.5),    // 橙果主島東側水道
+    new THREE.Vector3(0.0, -0.82, -16.8),   // 北側海峽
+    new THREE.Vector3(18.0, -0.82, -13.8),  // 綠能風車島停靠站
+    new THREE.Vector3(20.5, -0.82, 0.0),    // 東側中環水道
+    new THREE.Vector3(17.2, -0.82, 13.0),   // 櫻花沙龍島停靠站
+    new THREE.Vector3(0.0, -0.82, 21.8),    // AI 島南側外海水道
+    new THREE.Vector3(-17.2, -0.82, 13.0),  // 遠洋港灣島停靠站
+    new THREE.Vector3(-20.5, -0.82, 0.0),   // 西側中環水道
+    new THREE.Vector3(-18.0, -0.82, -13.8), // 燈塔觀測站島停靠站
   ];
   return new THREE.CatmullRomCurve3(pts, true, 'catmullrom', 0.45);
 }
 
-// ★ 新增：外海國際巨型郵輪環島航線 ★
-function createInternationalCruiseRoute() {
-  const pts = [];
-  const rx = 31.0;
-  const rz = 23.5;
-  for (let i = 0; i < 16; i++) {
-    const angle = (i / 16) * Math.PI * 2;
-    pts.push(new THREE.Vector3(Math.cos(angle) * rx, -0.82, Math.sin(angle) * rz));
-  }
-  return new THREE.CatmullRomCurve3(pts, true, 'catmullrom', 0.5);
+// ==========================================
+// 5. ★ 三座不同造型與配色的跨海大橋 ★
+// (1) 翡翠白玉拱橋 (Arch Bridge)
+// (2) 緋紅金冠斜張橋 (Cable-Stayed Bridge)
+// (3) 暖陽原木棧橋 (Wooden Bridge)
+// ==========================================
+
+// (1) 拱橋：連通 橙果主島 ⇄ 02 語料庫花園
+function ArchBridge({ start, end }) {
+  const { sceneMode, setToastMessage } = useIslandStore();
+  const isNight = sceneMode === 'night';
+  const midX = (start[0] + end[0]) / 2;
+  const midZ = (start[2] + end[2]) / 2;
+  const length = Math.hypot(end[0] - start[0], end[2] - start[2]);
+  const angle = Math.atan2(end[2] - start[2], end[0] - start[0]);
+
+  const hangerPositions = useMemo(() => [-1.4, -0.7, 0, 0.7, 1.4], []);
+
+  return (
+    <group
+      position={[midX, 0.02, midZ]}
+      rotation={[0, -angle, 0]}
+      onClick={(e) => {
+        e.stopPropagation();
+        setToastMessage('🌈 翡翠白玉拱橋（Arch Bridge）：以雙拋物線翡翠鋼拱與白玉橋面連結語料庫花園！');
+      }}
+    >
+      {/* 象牙白石橋面 */}
+      <mesh receiveShadow castShadow>
+        <boxGeometry args={[length, 0.14, 1.45]} />
+        <meshStandardMaterial color="#f8fafc" roughness={0.4} />
+      </mesh>
+      {/* 翡翠綠兩側護欄 */}
+      <mesh position={[0, 0.2, 0.66]} castShadow>
+        <boxGeometry args={[length, 0.14, 0.1]} />
+        <meshStandardMaterial color="#0d9488" />
+      </mesh>
+      <mesh position={[0, 0.2, -0.66]} castShadow>
+        <boxGeometry args={[length, 0.14, 0.1]} />
+        <meshStandardMaterial color="#0d9488" />
+      </mesh>
+
+      {/* 雙側大型翡翠拱肋 (上拱結構 + 垂直吊桿) */}
+      {[0.66, -0.66].map((zOffset, idx) => (
+        <group key={idx}>
+          <QuadraticBezierLine
+            start={[-length * 0.46, 0.1, zOffset]}
+            mid={[0, 2.15, zOffset]}
+            end={[length * 0.46, 0.1, zOffset]}
+            color={isNight ? '#2dd4bf' : '#0f766e'}
+            lineWidth={4.5}
+          />
+          {hangerPositions.map((hx, hIdx) => {
+            const normX = hx / (length * 0.46);
+            const archY = (1 - normX * normX) * 1.15;
+            return (
+              <mesh key={hIdx} position={[hx, archY / 2 + 0.1, zOffset]}>
+                <cylinderGeometry args={[0.025, 0.025, archY, 8]} />
+                <meshStandardMaterial
+                  color="#5eead4"
+                  emissive={isNight ? '#14b8a6' : '#000000'}
+                  emissiveIntensity={isNight ? 1.2 : 0}
+                />
+              </mesh>
+            );
+          })}
+        </group>
+      ))}
+      {/* 拱頂橫向連繫樑 */}
+      <mesh position={[0, 1.18, 0]} castShadow>
+        <boxGeometry args={[0.18, 0.12, 1.38]} />
+        <meshStandardMaterial color="#0f766e" />
+      </mesh>
+      {/* 白石橋墩 */}
+      <mesh position={[-length * 0.32, -0.55, 0]}>
+        <cylinderGeometry args={[0.24, 0.3, 1.1, 12]} />
+        <meshStandardMaterial color="#cbd5e1" />
+      </mesh>
+      <mesh position={[length * 0.32, -0.55, 0]}>
+        <cylinderGeometry args={[0.24, 0.3, 1.1, 12]} />
+        <meshStandardMaterial color="#cbd5e1" />
+      </mesh>
+    </group>
+  );
+}
+
+// (2) 斜張橋：連通 橙果主島 ⇄ 03 語言政策講堂
+function CableStayedBridge({ start, end }) {
+  const { sceneMode, setToastMessage } = useIslandStore();
+  const isNight = sceneMode === 'night';
+  const midX = (start[0] + end[0]) / 2;
+  const midZ = (start[2] + end[2]) / 2;
+  const length = Math.hypot(end[0] - start[0], end[2] - start[2]);
+  const angle = Math.atan2(end[2] - start[2], end[0] - start[0]);
+
+  const cableAnchors = useMemo(() => [-1.85, -1.25, -0.65, 0.65, 1.25, 1.85], []);
+
+  return (
+    <group
+      position={[midX, 0.02, midZ]}
+      rotation={[0, -angle, 0]}
+      onClick={(e) => {
+        e.stopPropagation();
+        setToastMessage('🌉 緋紅金冠斜張橋（Cable-Stayed Bridge）：以高聳雙柱塔與放射狀黃金鋼索連結語言政策講堂！');
+      }}
+    >
+      {/* 現代深灰鋼構橋面與緋紅側樑 */}
+      <mesh receiveShadow castShadow>
+        <boxGeometry args={[length, 0.14, 1.45]} />
+        <meshStandardMaterial color="#334155" roughness={0.5} />
+      </mesh>
+      <mesh position={[0, 0.14, 0.68]}>
+        <boxGeometry args={[length, 0.12, 0.08]} />
+        <meshStandardMaterial color="#e11d48" />
+      </mesh>
+      <mesh position={[0, 0.14, -0.68]}>
+        <boxGeometry args={[length, 0.12, 0.08]} />
+        <meshStandardMaterial color="#e11d48" />
+      </mesh>
+
+      {/* 中央 H 型高聳斜張橋主塔 (緋紅塔身 + 黃金塔冠) */}
+      <group position={[0, 0, 0]}>
+        <mesh position={[0, 1.15, 0.68]} castShadow>
+          <boxGeometry args={[0.24, 2.8, 0.18]} />
+          <meshStandardMaterial color="#e11d48" />
+        </mesh>
+        <mesh position={[0, 1.15, -0.68]} castShadow>
+          <boxGeometry args={[0.24, 2.8, 0.18]} />
+          <meshStandardMaterial color="#e11d48" />
+        </mesh>
+        {/* 塔間橫樑與黃金塔冠 */}
+        <mesh position={[0, 1.65, 0]} castShadow>
+          <boxGeometry args={[0.2, 0.16, 1.45]} />
+          <meshStandardMaterial color="#facc15" />
+        </mesh>
+        <mesh position={[0, 2.45, 0]} castShadow>
+          <boxGeometry args={[0.22, 0.18, 1.5]} />
+          <meshStandardMaterial
+            color="#fde047"
+            emissive={isNight ? '#f59e0b' : '#000000'}
+            emissiveIntensity={isNight ? 1.8 : 0.3}
+          />
+        </mesh>
+
+        {/* 雙側放射狀斜張鋼索 */}
+        {[0.68, -0.68].map((zSide, sIdx) =>
+          cableAnchors.map((ax, cIdx) => (
+            <Line
+              key={`${sIdx}-${cIdx}`}
+              points={[
+                [0, 2.38, zSide],
+                [ax, 0.15, zSide],
+              ]}
+              color={isNight ? '#fde047' : '#f8fafc'}
+              lineWidth={1.8}
+            />
+          ))
+        )}
+      </group>
+    </group>
+  );
+}
+
+// (3) 原木棧橋：連通 橙果主島 ⇄ 04 人工智慧咖啡廳
+function WoodenBridge({ start, end }) {
+  const { setToastMessage } = useIslandStore();
+  const midX = (start[0] + end[0]) / 2;
+  const midZ = (start[2] + end[2]) / 2;
+  const length = Math.hypot(end[0] - start[0], end[2] - start[2]);
+  const angle = Math.atan2(end[2] - start[2], end[0] - start[0]);
+
+  const posts = useMemo(() => [-1.6, -0.8, 0, 0.8, 1.6], []);
+
+  return (
+    <group
+      position={[midX, 0.02, midZ]}
+      rotation={[0, -angle, 0]}
+      onClick={(e) => {
+        e.stopPropagation();
+        setToastMessage('🪵 暖陽原木棧橋（Wooden Bridge）：以溫潤杉木枕木與原木欄杆連結人工智慧咖啡廳！');
+      }}
+    >
+      {/* 溫潤原木橋面 */}
+      <mesh receiveShadow castShadow>
+        <boxGeometry args={[length, 0.12, 1.4]} />
+        <meshStandardMaterial color="#b45309" roughness={0.75} />
+      </mesh>
+      {/* 枕木紋理飾條 */}
+      {[-1.7, -1.1, -0.5, 0.1, 0.7, 1.3, 1.8].map((px, idx) => (
+        <mesh key={idx} position={[px, 0.07, 0]} receiveShadow>
+          <boxGeometry args={[0.25, 0.03, 1.38]} />
+          <meshStandardMaterial color="#d97706" />
+        </mesh>
+      ))}
+      {/* 雙側原木護欄橫桿 */}
+      <mesh position={[0, 0.32, 0.64]} castShadow>
+        <boxGeometry args={[length, 0.07, 0.07]} />
+        <meshStandardMaterial color="#78350f" />
+      </mesh>
+      <mesh position={[0, 0.32, -0.64]} castShadow>
+        <boxGeometry args={[length, 0.07, 0.07]} />
+        <meshStandardMaterial color="#78350f" />
+      </mesh>
+      {/* 原木立柱與海中木樁 */}
+      {posts.map((px, i) => (
+        <group key={i} position={[px, 0, 0]}>
+          <mesh position={[0, 0.22, 0.64]} castShadow>
+            <cylinderGeometry args={[0.05, 0.05, 0.42, 8]} />
+            <meshStandardMaterial color="#78350f" />
+          </mesh>
+          <mesh position={[0, 0.22, -0.64]} castShadow>
+            <cylinderGeometry args={[0.05, 0.05, 0.42, 8]} />
+            <meshStandardMaterial color="#78350f" />
+          </mesh>
+        </group>
+      ))}
+      <mesh position={[-length * 0.28, -0.55, 0]}>
+        <cylinderGeometry args={[0.18, 0.22, 1.1, 10]} />
+        <meshStandardMaterial color="#78350f" />
+      </mesh>
+      <mesh position={[length * 0.28, -0.55, 0]}>
+        <cylinderGeometry args={[0.18, 0.22, 1.1, 10]} />
+        <meshStandardMaterial color="#78350f" />
+      </mesh>
+    </group>
+  );
 }
 
 // ==========================================
-// 5. 連結外海無人島的「觀光渡輪」與航線標示
+// 6. 連結外海無人島的「觀光渡輪」與航線標示
 // ==========================================
 function SightseeingFerrySystem({ ferryCurve }) {
   const ferry1Ref = useRef();
   const ferry2Ref = useRef();
-  const { isPaused, showLabels, sceneMode, setToastMessage, triggerCameraFlight } = useIslandStore();
+  const { isPaused, showLabels, sceneMode, setToastMessage } = useIslandStore();
   const isNight = sceneMode === 'night';
 
-  // 航線水面虛線標示點
-  const routePoints = useMemo(() => ferryCurve.getPoints(90), [ferryCurve]);
+  const routePoints = useMemo(() => ferryCurve.getPoints(100), [ferryCurve]);
 
   useFrame(({ clock }) => {
     if (isPaused) return;
     const elapsed = clock.getElapsedTime();
 
+    // 兩艘渡輪同速、相差 0.5 圈，永遠保持半圈距離，絕不追撞
     [
-      { ref: ferry1Ref, offset: 0.0, speed: 0.022 },
-      { ref: ferry2Ref, offset: 0.5, speed: 0.022 },
+      { ref: ferry1Ref, offset: 0.0, speed: 0.02 },
+      { ref: ferry2Ref, offset: 0.5, speed: 0.02 },
     ].forEach(({ ref, offset, speed }) => {
       if (!ref.current) return;
       const t = (elapsed * speed + offset) % 1;
@@ -437,20 +663,17 @@ function SightseeingFerrySystem({ ferryCurve }) {
       scale={[0.82, 0.82, 0.82]}
       onClick={(e) => {
         e.stopPropagation();
-        setToastMessage(`⛴️ ${name}：串聯「橙果主島 ⇄ 遠洋港灣島 ⇄ 燈塔島 ⇄ 風車島 ⇄ 櫻花沙龍島」跳島航線！`);
+        setToastMessage(`⛴️ ${name}：正沿著中環專屬航道串聯四座外海無人島，完全與內灣鯨豚分流！`);
       }}
     >
-      {/* 船體底座 (朝向 +Z) */}
       <mesh position={[0, 0.18, 0]} castShadow>
         <boxGeometry args={[1.35, 0.38, 2.8]} />
         <meshStandardMaterial color="#ffffff" />
       </mesh>
-      {/* 船首流線尖端 (+Z) */}
       <mesh position={[0, 0.2, 1.65]} rotation={[Math.PI / 2, 0, 0]} castShadow>
         <coneGeometry args={[0.68, 0.7, 4]} />
         <meshStandardMaterial color="#f97316" />
       </mesh>
-      {/* 一樓船艙與發光玻璃窗 */}
       <mesh position={[0, 0.58, -0.1]} castShadow>
         <boxGeometry args={[1.15, 0.45, 2.0]} />
         <meshStandardMaterial color="#f8fafc" />
@@ -463,19 +686,9 @@ function SightseeingFerrySystem({ ferryCurve }) {
           emissiveIntensity={isNight ? 2.0 : 0.3}
         />
       </mesh>
-      {/* 二樓露天觀景甲板與遮陽頂棚 */}
       <mesh position={[0, 0.95, -0.15]} castShadow>
         <boxGeometry args={[1.05, 0.12, 1.5]} />
         <meshStandardMaterial color={roofColor} />
-      </mesh>
-      {/* 船側救生圈 */}
-      <mesh position={[0.6, 0.5, 0.3]} rotation={[0, Math.PI / 2, 0]}>
-        <torusGeometry args={[0.12, 0.04, 8, 16]} />
-        <meshStandardMaterial color="#ef4444" />
-      </mesh>
-      <mesh position={[-0.6, 0.5, 0.3]} rotation={[0, Math.PI / 2, 0]}>
-        <torusGeometry args={[0.12, 0.04, 8, 16]} />
-        <meshStandardMaterial color="#ef4444" />
       </mesh>
       {showLabels && (
         <Html position={[0, 1.55, 0]} center distanceFactor={26}>
@@ -489,7 +702,6 @@ function SightseeingFerrySystem({ ferryCurve }) {
 
   return (
     <group>
-      {/* 海面藍色虛線觀光航道 */}
       <Line
         points={routePoints}
         color={isNight ? '#38bdf8' : '#0284c7'}
@@ -506,7 +718,7 @@ function SightseeingFerrySystem({ ferryCurve }) {
 }
 
 // ==========================================
-// 6. 國際巨型郵輪「EUREKA 海洋號」與 8 國傳統服飾貴賓
+// 7. 國際巨型郵輪「EUREKA 海洋號」與 8 國傳統服飾貴賓
 // (台灣、美國、日本、捷克、西班牙、泰國、加拿大、芬蘭)
 // ==========================================
 const EIGHT_NATIONS_PASSENGERS = [
@@ -514,32 +726,29 @@ const EIGHT_NATIONS_PASSENGERS = [
     id: 'tw',
     flag: '🇹🇼',
     country: '台灣',
-    costumeName: '原住民圖騰盛裝與羽冠',
     pos: [-0.65, 2.15, 1.55],
-    primary: '#dc2626', // 祭典紅
+    primary: '#dc2626',
     secondary: '#1e293b',
     accent: '#ffffff',
-    headgear: 'feather', // 羽毛頭飾
+    headgear: 'feather',
   },
   {
     id: 'us',
     flag: '🇺🇸',
     country: '美國',
-    costumeName: '西部牛仔帽與丹寧勁裝',
     pos: [0.65, 2.15, 1.55],
-    primary: '#1d4ed8', // 丹寧藍
-    secondary: '#dc2626', // 紅領巾
-    accent: '#92400e', // 牛仔帽棕
+    primary: '#1d4ed8',
+    secondary: '#dc2626',
+    accent: '#92400e',
     headgear: 'cowboy',
   },
   {
     id: 'jp',
     flag: '🇯🇵',
     country: '日本',
-    costumeName: '櫻花粉振袖和服與金腰帶',
     pos: [-0.75, 2.15, 0.55],
-    primary: '#f472b6', // 櫻花粉和服
-    secondary: '#facc15', // 金色袋帶 Obi
+    primary: '#f472b6',
+    secondary: '#facc15',
     accent: '#1e293b',
     headgear: 'kimono_bun',
   },
@@ -547,21 +756,19 @@ const EIGHT_NATIONS_PASSENGERS = [
     id: 'cz',
     flag: '🇨🇿',
     country: '捷克',
-    costumeName: '波希米亞刺繡民俗服 Kroje',
     pos: [0.75, 2.15, 0.55],
-    primary: '#e11d48', // 波希米亞紅裙
-    secondary: '#ffffff', // 白蓬袖
-    accent: '#1e40af', // 藍刺繡背心
+    primary: '#e11d48',
+    secondary: '#ffffff',
+    accent: '#1e40af',
     headgear: 'floral_crown',
   },
   {
     id: 'es',
     flag: '🇪🇸',
     country: '西班牙',
-    costumeName: '佛朗明哥紅黑荷葉邊禮服',
     pos: [-0.75, 2.15, -0.45],
-    primary: '#dc2626', // 佛朗明哥紅
-    secondary: '#0f172a', // 黑荷葉邊
+    primary: '#dc2626',
+    secondary: '#0f172a',
     accent: '#f43f5e',
     headgear: 'rose_bun',
   },
@@ -569,10 +776,9 @@ const EIGHT_NATIONS_PASSENGERS = [
     id: 'th',
     flag: '🇹🇭',
     country: '泰國',
-    costumeName: '璀璨金絲泰服與尖頂金冠',
     pos: [0.75, 2.15, -0.45],
-    primary: '#eab308', // 皇家泰絲金
-    secondary: '#9333ea', // 紫金披肩 Sabai
+    primary: '#eab308',
+    secondary: '#9333ea',
     accent: '#fef08a',
     headgear: 'thai_chada',
   },
@@ -580,22 +786,20 @@ const EIGHT_NATIONS_PASSENGERS = [
     id: 'ca',
     flag: '🇨🇦',
     country: '加拿大',
-    costumeName: '皇家騎警鮮紅禮服與寬邊帽',
     pos: [-0.65, 2.15, -1.45],
-    primary: '#dc2626', // 楓葉騎警紅
-    secondary: '#1e293b', // 黑馬靴長褲
-    accent: '#b45309', // 卡其寬邊帽
+    primary: '#dc2626',
+    secondary: '#1e293b',
+    accent: '#b45309',
     headgear: 'mountie',
   },
   {
     id: 'fi',
     flag: '🇫🇮',
     country: '芬蘭',
-    costumeName: '北歐藍白傳統服與薩米風帽',
     pos: [0.65, 2.15, -1.45],
-    primary: '#0284c7', // 芬蘭湖泊藍
-    secondary: '#ffffff', // 白圍裙
-    accent: '#ef4444', // 薩米紅滾邊
+    primary: '#0284c7',
+    secondary: '#ffffff',
+    accent: '#ef4444',
     headgear: 'finnish_cap',
   },
 ];
@@ -609,7 +813,7 @@ function TraditionalPassenger({ data, index }) {
     if (isPaused) return;
     const t = clock.getElapsedTime() * 5 + index;
     if (armRef.current) {
-      armRef.current.rotation.z = 2.4 + Math.sin(t * 1.5) * 0.35; // 熱情揮手
+      armRef.current.rotation.z = 2.4 + Math.sin(t * 1.5) * 0.35;
     }
     if (bodyRef.current) {
       bodyRef.current.position.y = data.pos[1] + Math.abs(Math.sin(t * 0.8)) * 0.04;
@@ -618,30 +822,25 @@ function TraditionalPassenger({ data, index }) {
 
   return (
     <group ref={bodyRef} position={data.pos} scale={[0.38, 0.38, 0.38]}>
-      {/* 下半身裙擺或長褲 */}
       <mesh position={[0, 0.32, 0]} castShadow>
         <coneGeometry args={[0.34, 0.55, 14]} />
         <meshStandardMaterial color={data.primary} />
       </mesh>
-      {/* 西班牙佛朗明哥黑荷葉層 / 捷克白圍裙 / 日本金腰帶 / 芬蘭白圍裙 */}
       {(data.id === 'es' || data.id === 'cz' || data.id === 'jp' || data.id === 'fi') && (
         <mesh position={[0, 0.42, 0.03]} castShadow>
           <cylinderGeometry args={[0.28, 0.32, 0.22, 14]} />
           <meshStandardMaterial color={data.secondary} />
         </mesh>
       )}
-      {/* 上半身傳統服飾軀幹 */}
       <mesh position={[0, 0.75, 0]} castShadow>
         <cylinderGeometry args={[0.24, 0.28, 0.55, 14]} />
         <meshStandardMaterial color={data.id === 'cz' ? data.accent : data.primary} />
       </mesh>
-      {/* 泰國斜肩金絲披肩 / 美國紅領巾 / 台灣原民圖騰領 */}
       <mesh position={[0, 0.92, 0.05]} rotation={[0, 0, 0.35]}>
         <torusGeometry args={[0.22, 0.05, 8, 16]} />
         <meshStandardMaterial color={data.secondary} />
       </mesh>
 
-      {/* 熱情揮舞的右手 */}
       <group position={[0.3, 0.92, 0]} ref={armRef}>
         <mesh position={[0, -0.2, 0]}>
           <capsuleGeometry args={[0.06, 0.32, 6, 8]} />
@@ -649,7 +848,6 @@ function TraditionalPassenger({ data, index }) {
         </mesh>
       </group>
 
-      {/* 頭部與正臉雙眼 (+Z) */}
       <group position={[0, 1.32, 0]}>
         <mesh castShadow>
           <sphereGeometry args={[0.32, 16, 16]} />
@@ -664,9 +862,7 @@ function TraditionalPassenger({ data, index }) {
           <meshStandardMaterial color="#0f172a" />
         </mesh>
 
-        {/* 各國特色傳統頭飾 */}
         {data.headgear === 'feather' && (
-          /* 🇹🇼 台灣原民紅白頭帶與高聳白羽冠 */
           <group>
             <mesh position={[0, 0.14, 0]}>
               <cylinderGeometry args={[0.33, 0.33, 0.12, 16]} />
@@ -679,7 +875,6 @@ function TraditionalPassenger({ data, index }) {
           </group>
         )}
         {(data.headgear === 'cowboy' || data.headgear === 'mountie') && (
-          /* 🇺🇸 美國牛仔帽 / 🇨🇦 加拿大皇家騎警寬邊帽 */
           <group position={[0, 0.24, 0]}>
             <mesh>
               <cylinderGeometry args={[0.55, 0.55, 0.05, 16]} />
@@ -692,7 +887,6 @@ function TraditionalPassenger({ data, index }) {
           </group>
         )}
         {(data.headgear === 'kimono_bun' || data.headgear === 'rose_bun') && (
-          /* 🇯🇵 日本髮髻與櫻花簪 / 🇪🇸 西班牙紅玫瑰髮髻 */
           <group>
             <mesh position={[0, 0.1, -0.05]}>
               <sphereGeometry args={[0.33, 14, 14]} />
@@ -709,21 +903,18 @@ function TraditionalPassenger({ data, index }) {
           </group>
         )}
         {data.headgear === 'floral_crown' && (
-          /* 🇨🇿 捷克波希米亞花冠 */
           <mesh position={[0, 0.2, 0]} rotation={[Math.PI / 2, 0, 0]}>
             <torusGeometry args={[0.3, 0.07, 10, 18]} />
             <meshStandardMaterial color="#f43f5e" />
           </mesh>
         )}
         {data.headgear === 'thai_chada' && (
-          /* 🇹🇭 泰國傳統尖頂金冠 Chada */
           <mesh position={[0, 0.48, 0]} castShadow>
             <coneGeometry args={[0.22, 0.68, 12]} />
             <meshStandardMaterial color="#facc15" metalness={0.6} roughness={0.2} />
           </mesh>
         )}
         {data.headgear === 'finnish_cap' && (
-          /* 🇫🇮 芬蘭薩米風藍紅帽 */
           <group position={[0, 0.26, 0]}>
             <mesh>
               <cylinderGeometry args={[0.34, 0.32, 0.22, 8]} />
@@ -755,7 +946,7 @@ function InternationalCruiseShip({ cruiseCurve, shipRef }) {
   useFrame(({ clock }) => {
     if (isPaused || !shipRef.current) return;
     const elapsed = clock.getElapsedTime();
-    const t = (elapsed * 0.012) % 1;
+    const t = (elapsed * 0.011) % 1;
     const nextT = (t + 0.005) % 1;
     const pos = cruiseCurve.getPointAt(t);
     const nextPos = cruiseCurve.getPointAt(nextT);
@@ -766,7 +957,6 @@ function InternationalCruiseShip({ cruiseCurve, shipRef }) {
     shipRef.current.rotation.set(0, Math.atan2(dx, dz), 0);
   });
 
-  // 點擊郵輪時，鏡頭推進至郵輪旁特寫 8 國傳統服飾旅客
   const handleInspectCruise = (e) => {
     e.stopPropagation();
     if (shipRef.current) {
@@ -782,23 +972,19 @@ function InternationalCruiseShip({ cruiseCurve, shipRef }) {
     <group ref={shipRef} scale={[1.38, 1.38, 1.38]} onClick={handleInspectCruise}>
       {isNight && <pointLight position={[0, 3.8, 0]} intensity={2.8} distance={16} color="#fde047" />}
 
-      {/* 巨型深藍郵輪船身底座 (+Z 為船頭) */}
       <mesh position={[0, 0.45, 0]} castShadow receiveShadow>
         <boxGeometry args={[2.5, 0.9, 6.2]} />
         <meshStandardMaterial color="#0f172a" roughness={0.4} />
       </mesh>
-      {/* 船頭破浪錐 (+Z) */}
       <mesh position={[0, 0.45, 3.65]} rotation={[Math.PI / 2, 0, 0]} castShadow>
         <coneGeometry args={[1.25, 1.2, 4]} />
         <meshStandardMaterial color="#0f172a" />
       </mesh>
-      {/* 船身金色腰線 */}
       <mesh position={[0, 0.72, 0]}>
         <boxGeometry args={[2.54, 0.12, 6.24]} />
         <meshStandardMaterial color="#f59e0b" metalness={0.6} roughness={0.2} />
       </mesh>
 
-      {/* 第 1 層與第 2 層白色豪華客艙甲板 */}
       <mesh position={[0, 1.32, -0.15]} castShadow>
         <boxGeometry args={[2.25, 0.85, 5.2]} />
         <meshStandardMaterial color="#ffffff" />
@@ -808,7 +994,6 @@ function InternationalCruiseShip({ cruiseCurve, shipRef }) {
         <meshStandardMaterial color="#f8fafc" />
       </mesh>
 
-      {/* 兩側發光郵輪落地窗帶 */}
       {[1.15, 1.5, 1.9].map((yPos, idx) => (
         <mesh key={idx} position={[0, yPos, -0.2]}>
           <boxGeometry args={[2.28 - idx * 0.12, 0.14, 4.2]} />
@@ -820,7 +1005,6 @@ function InternationalCruiseShip({ cruiseCurve, shipRef }) {
         </mesh>
       ))}
 
-      {/* 頂層露天陽光甲板與湛藍游泳池 */}
       <mesh position={[0, 2.16, 0]} receiveShadow>
         <boxGeometry args={[1.95, 0.06, 4.2]} />
         <meshStandardMaterial color="#fde68a" />
@@ -830,7 +1014,6 @@ function InternationalCruiseShip({ cruiseCurve, shipRef }) {
         <meshStandardMaterial color="#38bdf8" emissive="#0ea5e9" emissiveIntensity={0.5} />
       </mesh>
 
-      {/* 船尾標誌性紅白雙郵輪大煙囪 */}
       <group position={[0, 2.65, -2.0]}>
         <mesh rotation={[-0.2, 0, 0]} castShadow>
           <cylinderGeometry args={[0.28, 0.36, 1.1, 16]} />
@@ -842,7 +1025,6 @@ function InternationalCruiseShip({ cruiseCurve, shipRef }) {
         </mesh>
       </group>
 
-      {/* ★ 甲板上的 8 國傳統服飾貴賓 (台灣、美國、日本、捷克、西班牙、泰國、加拿大、芬蘭) ★ */}
       {EIGHT_NATIONS_PASSENGERS.map((p, idx) => (
         <TraditionalPassenger key={p.id} data={p} index={idx} />
       ))}
@@ -859,8 +1041,166 @@ function InternationalCruiseShip({ cruiseCurve, shipRef }) {
 }
 
 // ==========================================
-// 7. 飄雪粒子系統 (Snow)
+// 8. 天空飛行器與雲朵：直升機、立體白雲、展翅海鷗群、飄雪
 // ==========================================
+function FlyingHelicopter() {
+  const heliRef = useRef();
+  const mainRotorRef = useRef();
+  const tailRotorRef = useRef();
+  const { isPaused, showLabels, setToastMessage } = useIslandStore();
+
+  useFrame(({ clock }) => {
+    if (isPaused) return;
+    const t = clock.getElapsedTime() * 0.28;
+    const rx = 18.0;
+    const rz = 13.5;
+    const x = Math.cos(t) * rx;
+    const z = Math.sin(t) * rz;
+    const y = 11.2 + Math.sin(t * 3) * 0.35;
+    const dx = -Math.sin(t) * rx;
+    const dz = Math.cos(t) * rz;
+
+    if (heliRef.current) {
+      heliRef.current.position.set(x, y, z);
+      heliRef.current.rotation.set(0.1, Math.atan2(dx, dz), 0);
+    }
+    if (mainRotorRef.current) mainRotorRef.current.rotation.y += 0.55;
+    if (tailRotorRef.current) tailRotorRef.current.rotation.x += 0.6;
+  });
+
+  return (
+    <group
+      ref={heliRef}
+      position={[15, 11.2, 0]}
+      scale={[0.78, 0.78, 0.78]}
+      onClick={(e) => {
+        e.stopPropagation();
+        setToastMessage('🚁 空中巡航號直升機：正從高空俯瞰橙果島、三座特色大橋與外海郵輪！');
+      }}
+    >
+      {/* 機艙主體 (+Z 為機頭) */}
+      <mesh rotation={[Math.PI / 2, 0, 0]} castShadow>
+        <capsuleGeometry args={[0.62, 0.9, 12, 16]} />
+        <meshStandardMaterial color="#e05a47" />
+      </mesh>
+      {/* 前方玻璃駕駛艙 (+Z) */}
+      <mesh position={[0, 0.08, 0.55]}>
+        <sphereGeometry args={[0.56, 14, 14]} />
+        <meshStandardMaterial color="#bae6fd" metalness={0.3} roughness={0.1} />
+      </mesh>
+      {/* 機身白條紋 */}
+      <mesh position={[0, -0.05, 0]}>
+        <boxGeometry args={[1.28, 0.2, 1.35]} />
+        <meshStandardMaterial color="#ffffff" />
+      </mesh>
+      {/* 機尾延伸桿 (-Z) 與垂直尾翼 */}
+      <mesh position={[0, 0.15, -1.55]} rotation={[Math.PI / 2, 0, 0]} castShadow>
+        <cylinderGeometry args={[0.12, 0.26, 1.9, 12]} />
+        <meshStandardMaterial color="#e05a47" />
+      </mesh>
+      <mesh position={[0, 0.45, -2.35]} castShadow>
+        <boxGeometry args={[0.1, 0.65, 0.35]} />
+        <meshStandardMaterial color="#ffffff" />
+      </mesh>
+      {/* 底部雙起落架滑橇 */}
+      <mesh position={[-0.45, -0.72, 0]} rotation={[Math.PI / 2, 0, 0]}>
+        <cylinderGeometry args={[0.04, 0.04, 1.8, 8]} />
+        <meshStandardMaterial color="#334155" />
+      </mesh>
+      <mesh position={[0.45, -0.72, 0]} rotation={[Math.PI / 2, 0, 0]}>
+        <cylinderGeometry args={[0.04, 0.04, 1.8, 8]} />
+        <meshStandardMaterial color="#334155" />
+      </mesh>
+      {/* 頂部高速旋轉主螺旋槳 */}
+      <group position={[0, 0.82, 0]} ref={mainRotorRef}>
+        <mesh position={[0, 0.08, 0]}>
+          <boxGeometry args={[3.9, 0.04, 0.22]} />
+          <meshStandardMaterial color="#1e293b" />
+        </mesh>
+        <mesh position={[0, 0.08, 0]} rotation={[0, Math.PI / 2, 0]}>
+          <boxGeometry args={[3.9, 0.04, 0.22]} />
+          <meshStandardMaterial color="#1e293b" />
+        </mesh>
+      </group>
+      {/* 尾部螺旋槳 */}
+      <group position={[0.14, 0.45, -2.35]} ref={tailRotorRef}>
+        <mesh>
+          <boxGeometry args={[0.04, 0.75, 0.1]} />
+          <meshStandardMaterial color="#1e293b" />
+        </mesh>
+      </group>
+      {showLabels && (
+        <Html position={[0, 1.65, 0]} center distanceFactor={26}>
+          <div className="bg-rose-600/95 text-white px-2.5 py-0.5 rounded-full text-[10px] font-bold shadow whitespace-nowrap cursor-pointer">
+            🚁 空中巡航號
+          </div>
+        </Html>
+      )}
+    </group>
+  );
+}
+
+function FluffyCloud({ position, scale = 1, speed = 0.18 }) {
+  const cloudRef = useRef();
+  const { isPaused } = useIslandStore();
+  useFrame(({ clock }) => {
+    if (!isPaused && cloudRef.current) {
+      cloudRef.current.position.x = position[0] + Math.sin(clock.getElapsedTime() * speed) * 2.5;
+    }
+  });
+  return (
+    <group ref={cloudRef} position={position} scale={[scale, scale, scale]}>
+      <mesh position={[0, 0, 0]}>
+        <sphereGeometry args={[1.1, 14, 14]} />
+        <meshStandardMaterial color="#ffffff" roughness={0.9} />
+      </mesh>
+      <mesh position={[0.9, -0.15, 0.2]}>
+        <sphereGeometry args={[0.85, 14, 14]} />
+        <meshStandardMaterial color="#ffffff" roughness={0.9} />
+      </mesh>
+      <mesh position={[-0.9, -0.2, -0.1]}>
+        <sphereGeometry args={[0.8, 14, 14]} />
+        <meshStandardMaterial color="#ffffff" roughness={0.9} />
+      </mesh>
+    </group>
+  );
+}
+
+function SeagullFlock() {
+  const flockRef = useRef();
+  const { isPaused } = useIslandStore();
+  const birds = useMemo(
+    () => [
+      [0, 0, 0],
+      [-1.4, 0.3, -1.1],
+      [1.3, -0.2, -1.2],
+      [-2.4, 0.5, -2.1],
+    ],
+    []
+  );
+
+  useFrame(({ clock }) => {
+    if (isPaused || !flockRef.current) return;
+    const t = clock.getElapsedTime() * 0.32 + 2.5;
+    const r = 15.0;
+    flockRef.current.position.set(Math.cos(t) * r, 9.2 + Math.sin(t * 2.5) * 0.5, Math.sin(t) * (r * 0.8));
+    flockRef.current.rotation.set(0, Math.atan2(-Math.sin(t) * r, Math.cos(t) * (r * 0.8)), 0);
+  });
+
+  return (
+    <group ref={flockRef}>
+      {birds.map((pos, i) => (
+        <group key={i} position={pos} scale={[0.6, 0.6, 0.6]}>
+          <mesh>
+            <boxGeometry args={[0.85, 0.04, 0.22]} />
+            <meshStandardMaterial color="#ffffff" />
+          </mesh>
+        </group>
+      ))}
+    </group>
+  );
+}
+
 function SnowParticles({ active }) {
   const pointsRef = useRef();
   const { isPaused } = useIslandStore();
@@ -901,7 +1241,7 @@ function SnowParticles({ active }) {
 }
 
 // ==========================================
-// 8. 景觀物件：樹木、夜間發光路燈(避開橋頭)、噴泉、太陽能板、攤販
+// 9. 景觀物件：樹木、夜間發光路燈(避開橋頭)、噴泉、太陽能板、攤販
 // ==========================================
 function CuteTree({ position, scale = 1, color = '#52b788' }) {
   const { sceneMode } = useIslandStore();
@@ -1254,7 +1594,7 @@ function GiantOrangeMonument({ position = [0, 0.04, 1.4] }) {
 }
 
 // ==========================================
-// 9. 四座六角主題島嶼與場館建築群 (路燈嚴格避開橋頭)
+// 10. 四座六角主題島嶼與場館建築群 (路燈嚴格避開橋頭)
 // ==========================================
 function HexThemeIslands() {
   const { activeModule, setActiveModule, setModalOpen, triggerCameraFlight, showLabels, isPaused, sceneMode } =
@@ -1311,12 +1651,6 @@ function HexThemeIslands() {
         <mesh position={[0, -1.65, 0]}>
           <cylinderGeometry args={[5.4, 4.3, 1.1, 6]} />
           <meshStandardMaterial color="#d4a373" roughness={0.85} />
-        </mesh>
-
-        {/* 西側觀光渡輪登船小碼頭 */}
-        <mesh position={[-5.4, -0.25, 3.6]} rotation={[0, -0.55, 0]} castShadow>
-          <boxGeometry args={[2.0, 0.14, 0.95]} />
-          <meshStandardMaterial color="#b08968" />
         </mesh>
 
         <mesh position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, Math.PI / 6]} receiveShadow>
@@ -1645,33 +1979,6 @@ function HexThemeIslands() {
         )}
       </group>
     </>
-  );
-}
-
-// ==========================================
-// 10. 跨海連接木橋元件
-// ==========================================
-function ConnectingBridge({ start, end }) {
-  const midX = (start[0] + end[0]) / 2;
-  const midZ = (start[2] + end[2]) / 2;
-  const length = Math.hypot(end[0] - start[0], end[2] - start[2]);
-  const angle = Math.atan2(end[2] - start[2], end[0] - start[0]);
-
-  return (
-    <group position={[midX, 0.02, midZ]} rotation={[0, -angle, 0]}>
-      <mesh receiveShadow castShadow>
-        <boxGeometry args={[length, 0.12, 1.35]} />
-        <meshStandardMaterial color="#b08968" roughness={0.7} />
-      </mesh>
-      <mesh position={[0, 0.22, 0.62]} castShadow>
-        <boxGeometry args={[length, 0.08, 0.08]} />
-        <meshStandardMaterial color="#7f5539" />
-      </mesh>
-      <mesh position={[0, 0.22, -0.62]} castShadow>
-        <boxGeometry args={[length, 0.08, 0.08]} />
-        <meshStandardMaterial color="#7f5539" />
-      </mesh>
-    </group>
   );
 }
 
@@ -2061,9 +2368,55 @@ function UprightActor({
 }
 
 // ==========================================
-// 12. 台灣海洋鯨豚生態：台灣白海豚群(4隻)、鯨魚爸媽帶3小鯨、單獨大翅鯨噴水
+// 12. ★ 依循獨立固定航道、絕不相撞之海上運動與鯨豚生態 ★
 // ==========================================
-function TaiwaneseWhiteDolphinPod({ centerPos = [-10.0, 0, 5.5], radius = 3.8, speed = 0.65 }) {
+
+// (A) 依循東內灣專屬航道的 SUP 立槳衝浪者
+function RouteSUPPaddler({ curve, offset = 0, speed = 0.035, boardColor = '#facc15', role = 'SUP 玩家' }) {
+  const supRef = useRef();
+  const { isPaused, showLabels } = useIslandStore();
+
+  useFrame(({ clock }) => {
+    if (isPaused || !supRef.current) return;
+    const elapsed = clock.getElapsedTime();
+    const t = (elapsed * speed + offset) % 1;
+    const nextT = (t + 0.01) % 1;
+    const pos = curve.getPointAt(t);
+    const nextPos = curve.getPointAt(nextT);
+    const dx = nextPos.x - pos.x;
+    const dz = nextPos.z - pos.z;
+
+    supRef.current.position.set(pos.x, pos.y + Math.sin(elapsed * 5 + offset * 10) * 0.04, pos.z);
+    supRef.current.rotation.set(0, Math.atan2(dx, dz), 0);
+  });
+
+  return (
+    <group ref={supRef} scale={[0.52, 0.52, 0.52]}>
+      <mesh castShadow>
+        <boxGeometry args={[0.68, 0.12, 2.1]} />
+        <meshStandardMaterial color={boardColor} />
+      </mesh>
+      <mesh position={[0, 0.42, 0]} castShadow>
+        <capsuleGeometry args={[0.16, 0.38, 8, 12]} />
+        <meshStandardMaterial color="#ea580c" />
+      </mesh>
+      <mesh position={[0, 0.8, 0]}>
+        <sphereGeometry args={[0.16, 12, 12]} />
+        <meshStandardMaterial color="#ffedd5" />
+      </mesh>
+      {showLabels && (
+        <Html position={[0, 1.35, 0]} center distanceFactor={24}>
+          <div className="bg-amber-50/90 text-amber-900 px-2 py-0.5 rounded-full text-[9px] font-bold border border-amber-200 whitespace-nowrap pointer-events-none">
+            🏄 {role}
+          </div>
+        </Html>
+      )}
+    </group>
+  );
+}
+
+// (B) 依循西內灣專屬航道的「台灣白海豚群 (4隻結伴同行)」
+function TaiwaneseWhiteDolphinPod({ curve, speed = 0.032 }) {
   const podRef = useRef();
   const dolphinRefs = useRef([]);
   const { isPaused, showLabels, setToastMessage } = useIslandStore();
@@ -2080,22 +2433,23 @@ function TaiwaneseWhiteDolphinPod({ centerPos = [-10.0, 0, 5.5], radius = 3.8, s
 
   useFrame(({ clock }) => {
     if (isPaused || !podRef.current) return;
-    const t = clock.getElapsedTime() * speed;
-    const angle = t * 0.5;
-    const x = centerPos[0] + Math.cos(angle) * radius;
-    const z = centerPos[2] + Math.sin(angle) * radius;
-    const dx = -Math.sin(angle) * radius;
-    const dz = Math.cos(angle) * radius;
+    const elapsed = clock.getElapsedTime();
+    const t = (elapsed * speed) % 1;
+    const nextT = (t + 0.01) % 1;
+    const pos = curve.getPointAt(t);
+    const nextPos = curve.getPointAt(nextT);
+    const dx = nextPos.x - pos.x;
+    const dz = nextPos.z - pos.z;
 
-    podRef.current.position.set(x, -0.88, z);
+    podRef.current.position.set(pos.x, pos.y, pos.z);
     podRef.current.rotation.set(0, Math.atan2(dx, dz), 0);
 
     dolphinRefs.current.forEach((mesh, idx) => {
       if (!mesh) return;
       const m = podMembers[idx];
-      const arc = Math.sin(t * 2.6 + m.phase);
-      mesh.position.y = Math.max(-0.15, arc * 0.95);
-      mesh.rotation.x = -Math.cos(t * 2.6 + m.phase) * 0.38;
+      const arc = Math.sin(elapsed * 2.8 + m.phase);
+      mesh.position.y = Math.max(-0.12, arc * 0.9);
+      mesh.rotation.x = -Math.cos(elapsed * 2.8 + m.phase) * 0.36;
     });
   });
 
@@ -2104,7 +2458,7 @@ function TaiwaneseWhiteDolphinPod({ centerPos = [-10.0, 0, 5.5], radius = 3.8, s
       ref={podRef}
       onClick={(e) => {
         e.stopPropagation();
-        setToastMessage('🐬 台灣白海豚（媽祖魚）群！粉白色的牠們正 4 隻結伴在近海巡游！');
+        setToastMessage('🐬 台灣白海豚（媽祖魚）群：4 隻粉白海豚正沿著西內灣保育航道結伴跳躍！');
       }}
     >
       {podMembers.map((m, i) => (
@@ -2139,7 +2493,8 @@ function TaiwaneseWhiteDolphinPod({ centerPos = [-10.0, 0, 5.5], radius = 3.8, s
   );
 }
 
-function WhaleFamilyPod({ centerPos = [12.0, -0.88, 6.5] }) {
+// (C) 依循東外海專屬航道的「鯨魚家族 (爸爸、媽媽帶 3 隻小鯨魚)」
+function WhaleFamilyPod({ curve, speed = 0.022 }) {
   const familyRef = useRef();
   const { isPaused, showLabels, setToastMessage } = useIslandStore();
 
@@ -2156,15 +2511,15 @@ function WhaleFamilyPod({ centerPos = [12.0, -0.88, 6.5] }) {
 
   useFrame(({ clock }) => {
     if (isPaused || !familyRef.current) return;
-    const t = clock.getElapsedTime() * 0.22;
-    const rx = 5.5;
-    const rz = 3.8;
-    const x = centerPos[0] + Math.cos(t) * rx;
-    const z = centerPos[2] + Math.sin(t) * rz;
-    const dx = -Math.sin(t) * rx;
-    const dz = Math.cos(t) * rz;
+    const elapsed = clock.getElapsedTime();
+    const t = (elapsed * speed) % 1;
+    const nextT = (t + 0.01) % 1;
+    const pos = curve.getPointAt(t);
+    const nextPos = curve.getPointAt(nextT);
+    const dx = nextPos.x - pos.x;
+    const dz = nextPos.z - pos.z;
 
-    familyRef.current.position.set(x, centerPos[1] + Math.sin(t * 4) * 0.06, z);
+    familyRef.current.position.set(pos.x, pos.y + Math.sin(elapsed * 3) * 0.06, pos.z);
     familyRef.current.rotation.set(0, Math.atan2(dx, dz), 0);
   });
 
@@ -2173,7 +2528,7 @@ function WhaleFamilyPod({ centerPos = [12.0, -0.88, 6.5] }) {
       ref={familyRef}
       onClick={(e) => {
         e.stopPropagation();
-        setToastMessage('🐋 鯨魚家族：鯨魚爸爸與媽媽正帶著 3 隻小鯨魚溫暖巡游！');
+        setToastMessage('🐋 鯨魚家族：鯨魚爸爸與媽媽正帶著 3 隻小鯨魚沿東外海專屬航道溫暖巡游！');
       }}
     >
       {familyMembers.map((w, idx) => (
@@ -2199,22 +2554,27 @@ function WhaleFamilyPod({ centerPos = [12.0, -0.88, 6.5] }) {
   );
 }
 
-function SoloHumpbackWhale({ position = [-15.5, -0.88, -1.5] }) {
+// (D) 依循北內灣專屬航道的「單獨 1 隻大翅鯨噴水」
+function SoloHumpbackWhale({ curve, speed = 0.025 }) {
   const whaleRef = useRef();
   const spoutRef = useRef();
   const { isPaused, showLabels, setToastMessage } = useIslandStore();
 
   useFrame(({ clock }) => {
     if (isPaused || !whaleRef.current) return;
-    const t = clock.getElapsedTime() * 0.28;
-    const zOffset = Math.sin(t) * 3.8;
-    const dz = Math.cos(t);
+    const elapsed = clock.getElapsedTime();
+    const t = (elapsed * speed) % 1;
+    const nextT = (t + 0.01) % 1;
+    const pos = curve.getPointAt(t);
+    const nextPos = curve.getPointAt(nextT);
+    const dx = nextPos.x - pos.x;
+    const dz = nextPos.z - pos.z;
 
-    whaleRef.current.position.set(position[0], position[1] + Math.sin(t * 3) * 0.08, position[2] + zOffset);
-    whaleRef.current.rotation.set(0, dz >= 0 ? 0 : Math.PI, 0);
+    whaleRef.current.position.set(pos.x, pos.y + Math.sin(elapsed * 2.5) * 0.07, pos.z);
+    whaleRef.current.rotation.set(0, Math.atan2(dx, dz), 0);
 
     if (spoutRef.current) {
-      const pulse = (Math.sin(clock.getElapsedTime() * 3.2) + 1) * 0.5;
+      const pulse = (Math.sin(elapsed * 3.2) + 1) * 0.5;
       spoutRef.current.scale.set(0.75 + pulse * 0.65, 0.45 + pulse * 1.45, 0.75 + pulse * 0.65);
       spoutRef.current.position.y = 0.75 + pulse * 0.6;
     }
@@ -2223,11 +2583,10 @@ function SoloHumpbackWhale({ position = [-15.5, -0.88, -1.5] }) {
   return (
     <group
       ref={whaleRef}
-      position={position}
-      scale={[1.25, 1.25, 1.25]}
+      scale={[1.22, 1.22, 1.22]}
       onClick={(e) => {
         e.stopPropagation();
-        setToastMessage('🐳 大翅鯨（座頭鯨）噴出壯觀水柱！注意看牠兩側修長的白色大胸鰭！');
+        setToastMessage('🐳 大翅鯨（座頭鯨）噴出壯觀水柱！牠正沿著北灣專屬水道單獨巡游！');
       }}
     >
       <mesh rotation={[Math.PI / 2, 0, 0]} castShadow>
@@ -2268,7 +2627,7 @@ function SoloHumpbackWhale({ position = [-15.5, -0.88, -1.5] }) {
 }
 
 // ==========================================
-// 13. 外海 4 座無人島與衛星島嶼 + SUP + 海鷗
+// 13. 外海 4 座無人島與衛星島嶼
 // ==========================================
 function SunbatherWithSunglasses({ position, rotation = [0, 0, 0], umbrellaColor = '#f43f5e' }) {
   return (
@@ -2327,8 +2686,8 @@ function OuterSatelliteIslands() {
 
   return (
     <group>
-      {/* 1. 燈塔觀測站島 (附渡輪停靠木棧道) */}
-      <group position={[-22.5, -0.3, -15.5]}>
+      {/* 1. 燈塔觀測站島 */}
+      <group position={[-23.5, -0.3, -16.5]}>
         <mesh position={[0, -0.3, 0]} receiveShadow castShadow>
           <cylinderGeometry args={[3.8, 4.4, 1.2, 6]} />
           <meshStandardMaterial color="#95d5b2" />
@@ -2363,8 +2722,8 @@ function OuterSatelliteIslands() {
         )}
       </group>
 
-      {/* 2. 綠能風車島 (附渡輪停靠木棧道) */}
-      <group position={[22.5, -0.3, -15.5]}>
+      {/* 2. 綠能風車島 */}
+      <group position={[23.5, -0.3, -16.5]}>
         <mesh position={[0, -0.3, 0]} receiveShadow castShadow>
           <cylinderGeometry args={[4.1, 4.7, 1.2, 6]} />
           <meshStandardMaterial color="#74c69d" />
@@ -2398,8 +2757,8 @@ function OuterSatelliteIslands() {
         )}
       </group>
 
-      {/* 3. 櫻花沙龍島 (附渡輪停靠木棧道) */}
-      <group position={[21.0, -0.3, 14.5]}>
+      {/* 3. 櫻花沙龍島 */}
+      <group position={[22.0, -0.3, 15.5]}>
         <mesh position={[0, -0.3, 0]} receiveShadow castShadow>
           <cylinderGeometry args={[4.0, 4.6, 1.1, 6]} />
           <meshStandardMaterial color="#95d5b2" />
@@ -2432,7 +2791,7 @@ function OuterSatelliteIslands() {
       </group>
 
       {/* 4. 遠洋港灣島與停泊帆船 */}
-      <group position={[-21.0, -0.3, 14.5]}>
+      <group position={[-22.0, -0.3, 15.5]}>
         <mesh position={[0, -0.3, 0]} receiveShadow castShadow>
           <cylinderGeometry args={[3.6, 4.2, 1.1, 6]} />
           <meshStandardMaterial color="#95d5b2" />
@@ -2455,7 +2814,8 @@ function OuterSatelliteIslands() {
         )}
       </group>
 
-      <group ref={boatRef} position={[-15.5, -0.82, 14.5]}>
+      {/* 停泊在港灣島安全港池內的帆船 */}
+      <group ref={boatRef} position={[-18.8, -0.82, 18.2]}>
         <mesh castShadow>
           <boxGeometry args={[1.8, 0.42, 0.85]} />
           <meshStandardMaterial color="#ffffff" />
@@ -2473,74 +2833,6 @@ function OuterSatelliteIslands() {
   );
 }
 
-function SUPPaddler({ centerPos, radius = 2.6, speed = 0.5, phase = 0, boardColor = '#facc15' }) {
-  const supRef = useRef();
-  const { isPaused } = useIslandStore();
-
-  useFrame(({ clock }) => {
-    if (isPaused || !supRef.current) return;
-    const t = clock.getElapsedTime() * speed + phase;
-    const x = centerPos[0] + Math.cos(t) * radius;
-    const z = centerPos[2] + Math.sin(t) * (radius * 0.75);
-    const dx = -Math.sin(t) * radius;
-    const dz = Math.cos(t) * (radius * 0.75);
-    supRef.current.position.set(x, -0.82 + Math.sin(t * 5) * 0.04, z);
-    supRef.current.rotation.set(0, Math.atan2(dx, dz), 0);
-  });
-
-  return (
-    <group ref={supRef} scale={[0.52, 0.52, 0.52]}>
-      <mesh castShadow>
-        <boxGeometry args={[0.68, 0.12, 2.1]} />
-        <meshStandardMaterial color={boardColor} />
-      </mesh>
-      <mesh position={[0, 0.42, 0]} castShadow>
-        <capsuleGeometry args={[0.16, 0.38, 8, 12]} />
-        <meshStandardMaterial color="#ea580c" />
-      </mesh>
-      <mesh position={[0, 0.8, 0]}>
-        <sphereGeometry args={[0.16, 12, 12]} />
-        <meshStandardMaterial color="#ffedd5" />
-      </mesh>
-    </group>
-  );
-}
-
-function SeagullFlock() {
-  const flockRef = useRef();
-  const { isPaused } = useIslandStore();
-  const birds = useMemo(
-    () => [
-      [0, 0, 0],
-      [-1.4, 0.3, -1.1],
-      [1.3, -0.2, -1.2],
-      [-2.4, 0.5, -2.1],
-    ],
-    []
-  );
-
-  useFrame(({ clock }) => {
-    if (isPaused || !flockRef.current) return;
-    const t = clock.getElapsedTime() * 0.32;
-    const r = 17.5;
-    flockRef.current.position.set(Math.cos(t) * r, 9.5 + Math.sin(t * 2.5) * 0.5, Math.sin(t) * (r * 0.8));
-    flockRef.current.rotation.set(0, Math.atan2(-Math.sin(t) * r, Math.cos(t) * (r * 0.8)), 0);
-  });
-
-  return (
-    <group ref={flockRef}>
-      {birds.map((pos, i) => (
-        <group key={i} position={pos} scale={[0.6, 0.6, 0.6]}>
-          <mesh>
-            <boxGeometry args={[0.85, 0.04, 0.22]} />
-            <meshStandardMaterial color="#ffffff" />
-          </mesh>
-        </group>
-      ))}
-    </group>
-  );
-}
-
 // ==========================================
 // 14. 3D 群島總場景與智慧相機控制器
 // ==========================================
@@ -2554,13 +2846,26 @@ function IslandScene({ controlsRef, cruiseShipRef }) {
     return Math.max(0.72, Math.min(1.15, minDim / 13.0));
   }, [viewport.width, viewport.height]);
 
+  // 1. 陸地六角環島步道與跨橋路徑
   const hexPathOrange = useMemo(() => createHexagonPath(0, 0, 4.35), []);
   const hexPathCorpus = useMemo(() => createHexagonPath(12.5, -7.2, 3.75), []);
   const hexPathPolicy = useMemo(() => createHexagonPath(-12.5, -7.2, 3.75), []);
   const hexPathSystems = useMemo(() => createHexagonPath(0, 14.0, 3.75), []);
   const grandBridgePath = useMemo(() => createGrandArchipelagoPath(), []);
+
+  // 2. ★ 海上無碰撞獨立分流航道 (各自擁有專屬海域，絕不交錯相撞) ★
+  // (a) 東內灣航道：SUP 立槳衝浪區
+  const supBayCurve = useMemo(() => createOvalSeaRoute(8.2, 5.2, 2.2, 1.8, -0.82), []);
+  // (b) 西內灣航道：台灣白海豚群 (4隻) 保育區
+  const whiteDolphinCurve = useMemo(() => createOvalSeaRoute(-8.2, 5.2, 2.3, 1.9, -0.88), []);
+  // (c) 北內灣航道：單獨大翅鯨噴水巡游區
+  const humpbackCurve = useMemo(() => createOvalSeaRoute(0.0, -10.2, 3.3, 1.6, -0.88), []);
+  // (d) 東外海航道：鯨魚家族 (爸媽帶3小鯨) 巡游區
+  const whaleFamilyCurve = useMemo(() => createOvalSeaRoute(26.5, 0.0, 2.0, 4.2, -0.88), []);
+  // (e) 中環跳島航道：無人島觀光渡輪
   const outerFerryCurve = useMemo(() => createOuterFerryRoute(), []);
-  const internationalCruiseCurve = useMemo(() => createInternationalCruiseRoute(), []);
+  // (f) 外環公海航道：國際巨型郵輪 (載8國傳統服飾人民)
+  const internationalCruiseCurve = useMemo(() => createOvalSeaRoute(0.0, 0.0, 39.5, 31.0, -0.82), []);
 
   useFrame(() => {
     const controls = controlsRef.current;
@@ -2580,7 +2885,7 @@ function IslandScene({ controlsRef, cruiseShipRef }) {
   return (
     <>
       <color attach="background" args={[env.bg]} />
-      <fog attach="fog" args={[env.fog, 44, 96]} />
+      <fog attach="fog" args={[env.fog, 46, 102]} />
       <ambientLight intensity={env.ambientIntensity} color={env.ambientColor} />
       <hemisphereLight skyColor={env.bg} groundColor={env.ocean} intensity={0.6} />
       <directionalLight position={env.dirPos} intensity={env.dirIntensity} color={env.dirColor} castShadow />
@@ -2590,42 +2895,48 @@ function IslandScene({ controlsRef, cruiseShipRef }) {
       <group scale={[responsiveScale, responsiveScale, responsiveScale]} position={[0, -0.5, 0]}>
         {/* 廣闊大海 */}
         <mesh position={[0, -1.25, 0]} receiveShadow>
-          <cylinderGeometry args={[85, 85, 0.8, 64]} />
+          <cylinderGeometry args={[92, 92, 0.8, 64]} />
           <meshStandardMaterial color={env.ocean} roughness={0.22} />
         </mesh>
+
+        {/* 天空飛行器與雲朵：直升機、4 朵立體白雲、海鷗群 */}
+        <FlyingHelicopter />
+        <FluffyCloud position={[-15, 11.8, -10]} scale={1.15} speed={0.16} />
+        <FluffyCloud position={[16, 12.2, -8]} scale={1.3} speed={0.14} />
+        <FluffyCloud position={[-10, 12.6, 12]} scale={0.95} speed={0.2} />
+        <FluffyCloud position={[13, 11.4, 11]} scale={1.05} speed={0.15} />
+        <SeagullFlock />
 
         {/* 外海 4 座無人島與衛星島嶼 */}
         <OuterSatelliteIslands />
 
-        {/* ★ 新增：連結外海無人島的觀光渡輪航線與雙渡輪 ★ */}
+        {/* ★ 分流海上運動、鯨豚與船隻（各自沿專屬固定路線行進，絕不相撞） ★ */}
+        <RouteSUPPaddler curve={supBayCurve} offset={0.0} speed={0.04} boardColor="#facc15" role="SUP 立槳玩家 A" />
+        <RouteSUPPaddler curve={supBayCurve} offset={0.5} speed={0.04} boardColor="#34d399" role="SUP 立槳玩家 B" />
+        <TaiwaneseWhiteDolphinPod curve={whiteDolphinCurve} speed={0.032} />
+        <SoloHumpbackWhale curve={humpbackCurve} speed={0.025} />
+        <WhaleFamilyPod curve={whaleFamilyCurve} speed={0.022} />
         <SightseeingFerrySystem ferryCurve={outerFerryCurve} />
-
-        {/* ★ 新增：載著 8 國傳統服飾貴賓的國際巨型郵輪 ★ */}
         <InternationalCruiseShip cruiseCurve={internationalCruiseCurve} shipRef={cruiseShipRef} />
-
-        {/* 海洋鯨豚生態：台灣白海豚群(4隻)、鯨魚爸媽帶3小鯨、單獨大翅鯨噴水、SUP */}
-        <TaiwaneseWhiteDolphinPod centerPos={[-8.8, 0, 5.5]} radius={3.2} speed={0.65} />
-        <WhaleFamilyPod centerPos={[12.0, -0.88, 6.2]} />
-        <SoloHumpbackWhale position={[-15.5, -0.88, -1.5]} />
-        <SUPPaddler centerPos={[6.2, 0, 5.2]} radius={2.2} speed={0.5} phase={0} boardColor="#facc15" />
-        <SUPPaddler centerPos={[0, 0, -9.2]} radius={2.6} speed={0.45} phase={2.2} boardColor="#34d399" />
-        <SeagullFlock />
 
         {/* 4 座六角主題島嶼與場館 */}
         <HexThemeIslands />
 
-        {/* 連接四大六角島的 3 座跨海木橋 */}
-        <ConnectingBridge start={[4.4, 0, -2.5]} end={[8.4, 0, -4.8]} />
-        <ConnectingBridge start={[-4.4, 0, -2.5]} end={[-8.4, 0, -4.8]} />
-        <ConnectingBridge start={[0, 0, 5.1]} end={[0, 0, 9.3]} />
+        {/* ★ 三座造型與顏色截然不同的跨海大橋 ★ */}
+        {/* 1. 東北橋：翡翠白玉拱橋 (Arch Bridge) */}
+        <ArchBridge start={[4.4, 0, -2.5]} end={[8.4, 0, -4.8]} />
+        {/* 2. 西北橋：緋紅金冠斜張橋 (Cable-Stayed Bridge) */}
+        <CableStayedBridge start={[-4.4, 0, -2.5]} end={[-8.4, 0, -4.8]} />
+        {/* 3. 南方橋：暖陽原木棧橋 (Wooden Bridge) */}
+        <WoodenBridge start={[0, 0, 5.1]} end={[0, 0, 9.3]} />
 
         {/* 跨場館知識協作光弧 */}
         {showSynergyLines && (
           <group>
-            <QuadraticBezierLine start={[0, 3.2, -1.2]} end={[12.5, 3.2, -7.2]} mid={[6.2, 6.8, -4.2]} color="#e05a47" lineWidth={2} dashed dashScale={2} />
-            <QuadraticBezierLine start={[0, 3.2, -1.2]} end={[-12.5, 3.2, -7.2]} mid={[-6.2, 6.8, -4.2]} color="#3a86ff" lineWidth={2} dashed dashScale={2} />
-            <QuadraticBezierLine start={[0, 3.2, -1.2]} end={[0, 3.2, 14.0]} mid={[0, 7.2, 6.5]} color="#f59e0b" lineWidth={2} dashed dashScale={2} />
-            <QuadraticBezierLine start={[-12.5, 3.2, -7.2]} end={[12.5, 3.2, -7.2]} mid={[0, 7.5, -7.2]} color="#0d9488" lineWidth={2} dashed dashScale={2} />
+            <QuadraticBezierLine start={[0, 3.2, -1.2]} end={[12.5, 3.2, -7.2]} mid={[6.2, 6.8, -4.2]} color="#0d9488" lineWidth={2} dashed dashScale={2} />
+            <QuadraticBezierLine start={[0, 3.2, -1.2]} end={[-12.5, 3.2, -7.2]} mid={[-6.2, 6.8, -4.2]} color="#e11d48" lineWidth={2} dashed dashScale={2} />
+            <QuadraticBezierLine start={[0, 3.2, -1.2]} end={[0, 3.2, 14.0]} mid={[0, 7.2, 6.5]} color="#d97706" lineWidth={2} dashed dashScale={2} />
+            <QuadraticBezierLine start={[-12.5, 3.2, -7.2]} end={[12.5, 3.2, -7.2]} mid={[0, 7.5, -7.2]} color="#3a86ff" lineWidth={2} dashed dashScale={2} />
           </group>
         )}
 
@@ -2669,7 +2980,7 @@ function IslandScene({ controlsRef, cruiseShipRef }) {
         maxPolarAngle={Math.PI / 2.12}
         minPolarAngle={0.05}
         minDistance={3.8}
-        maxDistance={75}
+        maxDistance={80}
         target={[0, 0.2, 0]}
       />
     </>
@@ -2677,14 +2988,14 @@ function IslandScene({ controlsRef, cruiseShipRef }) {
 }
 
 // ==========================================
-// 15. 頂層全螢幕懸浮 UI 主元件 (含書籤名稱設定：EUREKA！橙果島)
+// 15. 頂層全螢幕懸浮 UI 主元件 (書籤名稱固定為：EUREKA！橙果島)
 // ==========================================
 export default function App() {
   const controlsRef = useRef();
   const cruiseShipRef = useRef();
   const [searchQuery, setSearchQuery] = useState('');
 
-  // ★ 自動將網頁標題與使用者加入書籤預設名稱設為「EUREKA！橙果島」 ★
+  // 自動設定瀏覽器書籤與分頁名稱為「EUREKA！橙果島」
   useEffect(() => {
     document.title = 'EUREKA！橙果島';
   }, []);
@@ -2763,10 +3074,9 @@ export default function App() {
   const handleBirdsEyeView = () => {
     setModalOpen(false);
     setMobileMenuOpen(false);
-    triggerCameraFlight([0, 46.0, 4.0], [0, 0, 2.0]);
+    triggerCameraFlight([0, 48.0, 4.0], [0, 0, 2.0]);
   };
 
-  // 一鍵飛往國際巨型郵輪觀賞 8 國傳統服飾貴賓
   const handleFocusCruiseShip = () => {
     setModalOpen(false);
     setMobileMenuOpen(false);
@@ -2774,7 +3084,7 @@ export default function App() {
       const p = cruiseShipRef.current.position;
       triggerCameraFlight([p.x, p.y + 6.5, p.z + 8.5], [p.x, p.y + 1.8, p.z]);
     } else {
-      triggerCameraFlight([25, 6.5, 18], [22, 1.5, 12]);
+      triggerCameraFlight([32, 6.5, 22], [28, 1.5, 16]);
     }
     setToastMessage(
       '🚢 已登船特寫「EUREKA 海洋號」！甲板上為台灣、美國、日本、捷克、西班牙、泰國、加拿大、芬蘭傳統服飾人民！'
@@ -2959,7 +3269,7 @@ export default function App() {
               </span>
             </div>
             <p className="text-[11px] font-medium text-slate-500 mt-1">
-              六角知識群島 · 跳島渡輪 · 八國文化巨型郵輪
+              拱橋 · 斜張橋 · 原木橋 · 分流海洋生態群島
             </p>
           </div>
 
