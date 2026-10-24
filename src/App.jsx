@@ -1,12 +1,12 @@
 import React, { useRef } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Float, Html, ContactShadows } from '@react-three/drei';
 import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import { useIslandStore } from './store/islandStore';
 import { researchModules } from './data/researchData';
 import * as THREE from 'three';
 
-// 🚶‍♂️ 動態走路的小人偶元件（再次加入並完美貼合島嶼草地）
+// 🚶‍♂️ 動態漫步的小人偶元件
 function WalkingCharacter({ startPos, color, speed = 1, radius = 2.5 }) {
   const charRef = useRef();
   
@@ -14,7 +14,7 @@ function WalkingCharacter({ startPos, color, speed = 1, radius = 2.5 }) {
     const t = clock.getElapsedTime() * speed;
     const x = startPos[0] + Math.cos(t * 0.7) * radius;
     const z = startPos[2] + Math.sin(t * 0.7) * radius;
-    const y = startPos[1] + Math.abs(Math.sin(t * 3.5)) * 0.12; // 走路上下彈跳感
+    const y = startPos[1] + Math.abs(Math.sin(t * 3.5)) * 0.12;
     
     if (charRef.current) {
       charRef.current.position.set(x, y, z);
@@ -24,17 +24,14 @@ function WalkingCharacter({ startPos, color, speed = 1, radius = 2.5 }) {
 
   return (
     <group ref={charRef} position={startPos} scale={[0.55, 0.55, 0.55]}>
-      {/* 身體 */}
       <mesh position={[0, 0.6, 0]} castShadow>
         <capsuleGeometry args={[0.3, 0.4, 8, 16]} />
         <meshStandardMaterial color={color} roughness={0.4} />
       </mesh>
-      {/* 頭部 */}
       <mesh position={[0, 1.2, 0]} castShadow>
         <sphereGeometry args={[0.35, 16, 16]} />
         <meshStandardMaterial color="#fde68a" roughness={0.3} />
       </mesh>
-      {/* 學術小背包 */}
       <mesh position={[0, 0.6, -0.25]} castShadow>
         <boxGeometry args={[0.35, 0.4, 0.2]} />
         <meshStandardMaterial color="#b45309" roughness={0.5} />
@@ -43,9 +40,97 @@ function WalkingCharacter({ startPos, color, speed = 1, radius = 2.5 }) {
   );
 }
 
-function IslandScene() {
+// 📐 響應式相機與場景管理器：根據螢幕寬高比自動計算最佳放大倍率
+function ResponsiveIsland() {
+  const { viewport } = useThree();
   const { setActiveModule, setModalOpen } = useIslandStore();
 
+  // 根據視口寬度動態調整島嶼大小與相機距離，確保大螢幕小螢幕都完美佔滿
+  const scaleFactor = Math.min(viewport.width, viewport.height) > 6 ? 2.6 : 2.1;
+
+  return (
+    <group scale={[scaleFactor, scaleFactor, scaleFactor]} position={[0, -1.3, 0]}>
+      <Float speed={1} rotationIntensity={0.03} floatIntensity={0.08}>
+        {/* 島嶼青草地 */}
+        <mesh position={[0, -1, 0]} receiveShadow>
+          <cylinderGeometry args={[13, 11.5, 2, 32]} />
+          <meshStandardMaterial color="#065f46" roughness={0.5} />
+        </mesh>
+        {/* 島嶼土壤層 */}
+        <mesh position={[0, -2.2, 0]}>
+          <cylinderGeometry args={[11.5, 10.5, 1.5, 32]} />
+          <meshStandardMaterial color="#78350f" roughness={0.8} />
+        </mesh>
+
+        {/* 🚶‍♂️ 動態漫步的小人偶 */}
+        <WalkingCharacter startPos={[-2.5, 0, -1]} color="#3b82f6" speed={0.9} radius={1.8} />
+        <WalkingCharacter startPos={[2.5, 0, 1.5]} color="#10b981" speed={1.1} radius={2.2} />
+
+        {/* 建築一：理論語言學 */}
+        <group position={[-5, 0, -2.5]} onClick={(e) => { e.stopPropagation(); setActiveModule('theory'); setModalOpen(true); }}>
+          <mesh position={[0, 0.9, 0]} castShadow>
+            <boxGeometry args={[2.2, 1.8, 2.2]} />
+            <meshStandardMaterial color="#fef3c7" roughness={0.3} />
+          </mesh>
+          <mesh position={[0, 2.2, 0]} rotation={[0, Math.PI / 4, 0]} castShadow>
+            <coneGeometry args={[1.6, 1.4, 4]} />
+            <meshStandardMaterial color="#ef4444" roughness={0.2} />
+          </mesh>
+          <Html position={[0, 3.2, 0]} center>
+            <div className="bg-white/95 px-3 py-1 rounded-full text-xs font-bold text-slate-700 shadow-lg border border-slate-200 cursor-pointer hover:scale-105 transition-transform whitespace-nowrap">📚 理論語言學</div>
+          </Html>
+        </group>
+
+        {/* 建築二：計量與語料庫 */}
+        <group position={[5, 0, -2.5]} onClick={(e) => { e.stopPropagation(); setActiveModule('corpus'); setModalOpen(true); }}>
+          <mesh position={[0, 1, 0]} castShadow>
+            <boxGeometry args={[2, 2.2, 2]} />
+            <meshStandardMaterial color="#dbeafe" roughness={0.3} />
+          </mesh>
+          <mesh position={[0, 2.3, 0]} castShadow>
+            <cylinderGeometry args={[0.9, 1.0, 0.6, 16]} />
+            <meshStandardMaterial color="#3b82f6" roughness={0.1} emissive="#1d4ed8" emissiveIntensity={0.8} />
+          </mesh>
+          <Html position={[0, 3.3, 0]} center>
+            <div className="bg-white/95 px-3 py-1 rounded-full text-xs font-bold text-slate-700 shadow-lg border border-slate-200 cursor-pointer hover:scale-105 transition-transform whitespace-nowrap">📊 計量與語料庫</div>
+          </Html>
+        </group>
+
+        {/* 建築三：社會政策智庫 */}
+        <group position={[0, 0, 4.2]} onClick={(e) => { e.stopPropagation(); setActiveModule('policy'); setModalOpen(true); }}>
+          <mesh position={[0, 0.9, 0]} castShadow>
+            <boxGeometry args={[2.4, 1.8, 2.4]} />
+            <meshStandardMaterial color="#d1fae5" roughness={0.3} />
+          </mesh>
+          <mesh position={[0, 2.1, 0]} castShadow>
+            <boxGeometry args={[1.4, 0.8, 1.4]} />
+            <meshStandardMaterial color="#10b981" roughness={0.2} />
+          </mesh>
+          <Html position={[0, 3.2, 0]} center>
+            <div className="bg-white/95 px-3 py-1 rounded-full text-xs font-bold text-slate-700 shadow-lg border border-slate-200 cursor-pointer hover:scale-105 transition-transform whitespace-nowrap">🏫 社會政策智庫</div>
+          </Html>
+        </group>
+
+        {/* 建築四：AI 實踐工坊 */}
+        <group position={[0, 0, 0]} onClick={(e) => { e.stopPropagation(); setActiveModule('systems'); setModalOpen(true); }}>
+          <mesh position={[0, 0.9, 0]} castShadow>
+            <cylinderGeometry args={[1.2, 1.4, 1.8, 16]} />
+            <meshStandardMaterial color="#ffffff" roughness={0.2} />
+          </mesh>
+          <mesh position={[0, 2.5, 0]} castShadow>
+            <octahedronGeometry args={[1.1]} />
+            <meshStandardMaterial color="#f59e0b" roughness={0.1} emissive="#d97706" emissiveIntensity={1.8} />
+          </mesh>
+          <Html position={[0, 3.8, 0]} center>
+            <div className="bg-amber-50/95 px-3.5 py-1.5 rounded-full text-xs font-extrabold text-amber-800 shadow-xl border border-amber-300 cursor-pointer hover:scale-105 transition-transform whitespace-nowrap">⚡ AI 實踐工坊</div>
+          </Html>
+        </group>
+      </Float>
+    </group>
+  );
+}
+
+function IslandScene() {
   return (
     <>
       <color attach="background" args={['#070d1b']} />
@@ -53,92 +138,15 @@ function IslandScene() {
       <directionalLight position={[20, 40, 20]} intensity={2.5} castShadow shadow-mapSize={2048} />
       <pointLight position={[0, 15, 0]} intensity={4} color="#3b82f6" distance={30} />
 
-      {/* 3D 群島本體：完美滿版展開 */}
-      <group scale={[2.2, 2.2, 2.2]} position={[0, -1.5, 0]}>
-        <Float speed={1} rotationIntensity={0.03} floatIntensity={0.08}>
-          {/* 島嶼青草地 */}
-          <mesh position={[0, -1, 0]} receiveShadow>
-            <cylinderGeometry args={[13, 11.5, 2, 32]} />
-            <meshStandardMaterial color="#065f46" roughness={0.5} />
-          </mesh>
-          {/* 島嶼土壤層 */}
-          <mesh position={[0, -2.2, 0]}>
-            <cylinderGeometry args={[11.5, 10.5, 1.5, 32]} />
-            <meshStandardMaterial color="#78350f" roughness={0.8} />
-          </mesh>
+      <ResponsiveIsland />
 
-          {/* 🚶‍♂️ 動態漫步的小人偶 */}
-          <WalkingCharacter startPos={[-2.5, 0, -1]} color="#3b82f6" speed={0.9} radius={1.8} />
-          <WalkingCharacter startPos={[2.5, 0, 1.5]} color="#10b981" speed={1.1} radius={2.2} />
-
-          {/* 建築一：理論語言學 */}
-          <group position={[-5, 0, -2.5]} onClick={(e) => { e.stopPropagation(); setActiveModule('theory'); setModalOpen(true); }}>
-            <mesh position={[0, 0.9, 0]} castShadow>
-              <boxGeometry args={[2.2, 1.8, 2.2]} />
-              <meshStandardMaterial color="#fef3c7" roughness={0.3} />
-            </mesh>
-            <mesh position={[0, 2.2, 0]} rotation={[0, Math.PI / 4, 0]} castShadow>
-              <coneGeometry args={[1.6, 1.4, 4]} />
-              <meshStandardMaterial color="#ef4444" roughness={0.2} />
-            </mesh>
-            <Html position={[0, 3.2, 0]} center>
-              <div className="bg-white/95 px-3 py-1 rounded-full text-xs font-bold text-slate-700 shadow-lg border border-slate-200 cursor-pointer hover:scale-105 transition-transform whitespace-nowrap">📚 理論語言學</div>
-            </Html>
-          </group>
-
-          {/* 建築二：計量與語料庫 */}
-          <group position={[5, 0, -2.5]} onClick={(e) => { e.stopPropagation(); setActiveModule('corpus'); setModalOpen(true); }}>
-            <mesh position={[0, 1, 0]} castShadow>
-              <boxGeometry args={[2, 2.2, 2]} />
-              <meshStandardMaterial color="#dbeafe" roughness={0.3} />
-            </mesh>
-            <mesh position={[0, 2.3, 0]} castShadow>
-              <cylinderGeometry args={[0.9, 1.0, 0.6, 16]} />
-              <meshStandardMaterial color="#3b82f6" roughness={0.1} emissive="#1d4ed8" emissiveIntensity={0.8} />
-            </mesh>
-            <Html position={[0, 3.3, 0]} center>
-              <div className="bg-white/95 px-3 py-1 rounded-full text-xs font-bold text-slate-700 shadow-lg border border-slate-200 cursor-pointer hover:scale-105 transition-transform whitespace-nowrap">📊 計量與語料庫</div>
-            </Html>
-          </group>
-
-          {/* 建築三：社會政策智庫 */}
-          <group position={[0, 0, 4.2]} onClick={(e) => { e.stopPropagation(); setActiveModule('policy'); setModalOpen(true); }}>
-            <mesh position={[0, 0.9, 0]} castShadow>
-              <boxGeometry args={[2.4, 1.8, 2.4]} />
-              <meshStandardMaterial color="#d1fae5" roughness={0.3} />
-            </mesh>
-            <mesh position={[0, 2.1, 0]} castShadow>
-              <boxGeometry args={[1.4, 0.8, 1.4]} />
-              <meshStandardMaterial color="#10b981" roughness={0.2} />
-            </mesh>
-            <Html position={[0, 3.2, 0]} center>
-              <div className="bg-white/95 px-3 py-1 rounded-full text-xs font-bold text-slate-700 shadow-lg border border-slate-200 cursor-pointer hover:scale-105 transition-transform whitespace-nowrap">🏫 社會政策智庫</div>
-            </Html>
-          </group>
-
-          {/* 建築四：AI 實踐工坊 */}
-          <group position={[0, 0, 0]} onClick={(e) => { e.stopPropagation(); setActiveModule('systems'); setModalOpen(true); }}>
-            <mesh position={[0, 0.9, 0]} castShadow>
-              <cylinderGeometry args={[1.2, 1.4, 1.8, 16]} />
-              <meshStandardMaterial color="#ffffff" roughness={0.2} />
-            </mesh>
-            <mesh position={[0, 2.5, 0]} castShadow>
-              <octahedronGeometry args={[1.1]} />
-              <meshStandardMaterial color="#f59e0b" roughness={0.1} emissive="#d97706" emissiveIntensity={1.8} />
-            </mesh>
-            <Html position={[0, 3.8, 0]} center>
-              <div className="bg-amber-50/95 px-3.5 py-1.5 rounded-full text-xs font-extrabold text-amber-800 shadow-xl border border-amber-300 cursor-pointer hover:scale-105 transition-transform whitespace-nowrap">⚡ AI 實踐工坊</div>
-            </Html>
-          </group>
-        </Float>
-      </group>
-
-      <ContactShadows position={[0, -4.5, 0]} opacity={0.65} scale={55} blur={3.5} far={6} />
+      <ContactShadows position={[0, -4.5, 0]} opacity={0.65} scale={65} blur={3.5} far={6} />
       <EffectComposer>
         <Bloom luminanceThreshold={0.4} luminanceSmoothing={0.9} intensity={1.5} />
       </EffectComposer>
 
-      <OrbitControls enablePan={true} enableZoom={true} maxPolarAngle={Math.PI / 2 - 0.05} minDistance={4} maxDistance={14} target={[0, -0.2, 0]} />
+      {/* 將攝影機拉得更近 [0, 3.0, 5.2]，讓圖面極具張力 */}
+      <OrbitControls enablePan={true} enableZoom={true} maxPolarAngle={Math.PI / 2 - 0.05} minDistance={3.5} maxDistance={11} target={[0, -0.2, 0]} />
     </>
   );
 }
@@ -152,7 +160,7 @@ export default function App() {
       
       {/* 1. 底層：100% 絕對滿版 3D 畫布 */}
       <div className="absolute inset-0 w-full h-full z-0">
-        <Canvas camera={{ position: [0, 3.5, 6.0], fov: 65 }} style={{ width: '100%', height: '100%', display: 'block' }}>
+        <Canvas camera={{ position: [0, 3.0, 5.2], fov: 72 }} style={{ width: '100%', height: '100%', display: 'block' }}>
           <IslandScene />
         </Canvas>
       </div>
@@ -205,7 +213,7 @@ export default function App() {
         </div>
       </aside>
 
-      {/* 4. 左側懸浮彈窗面板 (點擊建築或右側目錄後，直接疊加在 3D 圖面上方) */}
+      {/* 4. 左側懸浮彈窗面板 */}
       {isModalOpen && mod && (
         <div className="absolute top-20 left-6 z-30 w-96 bg-white/95 backdrop-blur-2xl border border-slate-200/90 rounded-3xl p-6 shadow-2xl pointer-events-auto animate-in fade-in zoom-in-95 duration-200 text-slate-800">
           <button onClick={() => setModalOpen(false)} className="absolute top-5 right-5 text-slate-400 hover:text-slate-700 bg-slate-100 w-8 h-8 rounded-full flex items-center justify-center transition-colors">✕</button>
