@@ -162,7 +162,7 @@ function HexPathWalker({ data }) {
 }
 
 // ==========================================
-// 4. 海上與天空生態（商船、海豚、海鷗、無人島）
+// 4. 海上與天空生態（商船、海豚、海鷗）
 // ==========================================
 function CargoShip({ startZ, speed, flagColor }) {
   const shipRef = useRef();
@@ -344,8 +344,11 @@ const HexIsland = ({ center, color, title, moduleKey, mainBuildingType }) => {
         </group>
       )}
 
-      {/* 附屬建築與樹木裝飾 */}
-      <mesh position={[-2.2, 0.3, -1.8]} castShadow><boxGeometry args={[1.1, 0.9, 1.1} /><meshStandardMaterial color="#e2e8f0" /></mesh>
+      {/* 修正後的附屬建築與樹木裝飾（括號已完整閉合） */}
+      <mesh position={[-2.2, 0.3, -1.8]} castShadow>
+        <boxGeometry args={[1.1, 0.9, 1.1]} />
+        <meshStandardMaterial color="#e2e8f0" />
+      </mesh>
       <CuteTree position={[2.2, 0, 2.0]} scale={0.9} />
 
       {showLabels && (
@@ -428,7 +431,7 @@ function IslandScene({ controlsRef }) {
         <IslandBridge start={[0, 0, 0]} end={[-9.5, 0, -5.5]} />
         <IslandBridge start={[0, 0, 0]} end={[0, 0, 11.0]} />
 
-        {/* 四大六角島嶼（主島名為橙果島） */}
+        {/* 四大六角島嶼（主島為橙果島） */}
         <HexIsland center={[0, 0, 0]} color="#95d5b2" title="🍊 橙果島 (核心主島)" moduleKey="orange" mainBuildingType="orange" />
         <HexIsland center={[9.5, 0, -5.5]} color="#74c69d" title="📊 計量語料島" moduleKey="corpus" mainBuildingType="corpus" />
         <HexIsland center={[-9.5, 0, -5.5]} color="#52b788" title="🏫 社會政策島" moduleKey="policy" mainBuildingType="policy" />
