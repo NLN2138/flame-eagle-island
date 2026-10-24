@@ -32,7 +32,7 @@ const useIslandStore = create((set) => ({
   toggleSynergyLines: () => set((s) => ({ showSynergyLines: !s.showSynergyLines })),
   isPaused: false,
   togglePause: () => set((s) => ({ isPaused: !s.isPaused })),
-  toastMessage: '🍊 歡迎來到 EUREKA！橙果島！三座特色大橋與分流海上航線已全面啟航',
+  toastMessage: '🍊 歡迎來到 EUREKA! 橙果島',
   setToastMessage: (msg) => set({ toastMessage: msg }),
   cameraFlight: null,
   triggerCameraFlight: (pos, target) =>
