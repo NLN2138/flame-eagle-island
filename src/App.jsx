@@ -2944,7 +2944,7 @@ function IslandScene({ controlsRef, cruiseShipRef }) {
         <UprightActor curve={hexPathOrange} offset={0.02} speed={0.028} dir={1} laneOffset={-0.22} actorType="dog_walker" shirt="#e05a47" bottom="#1e293b" petColor="#d97706" role="遛狗島主" />
         <UprightActor curve={hexPathOrange} offset={0.28} speed={0.022} dir={-1} laneOffset={0.24} actorType="stroller_family" role="爸媽與嫩嬰" />
         <UprightActor curve={hexPathOrange} offset={0.52} speed={0.03} dir={1} laneOffset={-0.2} actorType="umbrella" shirt="#ec4899" bottom="#be185d" umbrellaColor="#f472b6" role="語言學者" />
-        <UprightActor curve={hexPathOrange} offset={0.74} speed={0.052} dir={-1} laneOffset={0.26} actorType="jogger" shirt="#38bdf8" bottom="#0f172a" role="慢跑者" />
+        <UprightActor curve={hexPathOrange} offset={0.74} speed={0.052} dir={-1} laneOffset={0.26} actorType="jogger" shirt="#38bdf8" bottom="#0f172a" role="慢跑青少年" />
         <UprightActor curve={hexPathOrange} offset={0.88} speed={0.018} dir={1} laneOffset={-0.24} actorType="elder" shirt="#64748b" bottom="#334155" hair="#e2e8f0" role="拄拐杖阿公" />
         <UprightActor curve={hexPathOrange} offset={0.15} speed={0.06} dir={1} laneOffset={0.25} actorType="bike" shirt="#10b981" umbrellaColor="#f43f5e" role="騎腳踏車青年" />
         <UprightActor curve={hexPathOrange} offset={0.62} speed={0.055} dir={-1} laneOffset={-0.25} actorType="scooter" shirt="#a855f7" umbrellaColor="#facc15" role="滑板車小妹" />
