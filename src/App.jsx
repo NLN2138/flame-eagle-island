@@ -2618,7 +2618,7 @@ function SoloHumpbackWhale({ curve, speed = 0.025 }) {
       {showLabels && (
         <Html position={[0, 2.35, 0]} center distanceFactor={28}>
           <div className="bg-slate-900/90 text-sky-200 px-2.5 py-0.5 rounded-full text-[9px] font-bold shadow border border-sky-400 whitespace-nowrap cursor-pointer">
-            🐳 大翅鯨噴水 (單獨巡游)
+            🐳 大翅鯨噴水
           </div>
         </Html>
       )}
