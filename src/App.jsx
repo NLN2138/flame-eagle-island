@@ -1032,7 +1032,7 @@ function InternationalCruiseShip({ cruiseCurve, shipRef }) {
       {showLabels && (
         <Html position={[0, 4.1, 0]} center distanceFactor={28}>
           <div className="bg-gradient-to-r from-amber-500 to-rose-600 text-white px-3 py-1 rounded-full text-[10px] font-black shadow-xl border border-amber-200 whitespace-nowrap cursor-pointer">
-            🚢 國際巨型郵輪 · 八國傳統服飾貴賓 (點我登船特寫)
+            🚢 國際巨型郵輪 · 八國傳統服飾貴賓
           </div>
         </Html>
       )}
