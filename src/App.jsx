@@ -1345,7 +1345,7 @@ function InternationalCruiseShip({ cruiseCurve, shipRef }) {
                 : 'bg-gradient-to-r from-amber-500 to-rose-600 text-white border-amber-200 hover:scale-105'
             }`}
           >
-            🚢 國際巨型郵輪 · 海外國際發表 (點我跟船巡航)
+            🚢 國際巨型郵輪藍鯨號
           </div>
         </Html>
       )}
