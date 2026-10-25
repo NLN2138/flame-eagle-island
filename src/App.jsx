@@ -3657,7 +3657,7 @@ function GuishanIsland({ position = [32.5, -0.3, 0.0] }) {
       {showLabels && (
         <Html position={[0, 4.2, 0]} center distanceFactor={30}>
           <div className="bg-emerald-900/95 text-emerald-100 px-3 py-1 rounded-full text-[11px] font-black shadow-xl border border-emerald-400 whitespace-nowrap cursor-pointer">
-            🐢 龜山島 · 牛奶海溫泉 (點我飛覽)
+            🐢 龜山島 · 牛奶海溫泉
           </div>
         </Html>
       )}
