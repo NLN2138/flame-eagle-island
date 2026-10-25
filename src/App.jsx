@@ -135,7 +135,7 @@ const SCENE_CONFIGS = {
 
 // ==========================================
 // 3. 四大主題場館 + 國際郵輪海外發表完整去識別化資料庫
-// 圓點規則：journal (紅色點) -> conf (淡綠色點) -> epaper (淡藍色點)
+// 圓點規則：journal (紅色點) -> thesis (黃色點) -> conf (淡綠色點) -> epaper (淡藍色點)
 // 等級規則：THCI第一級 / TSSCI第二級 優先置頂
 // ==========================================
 const researchModules = {
@@ -158,11 +158,11 @@ const researchModules = {
         name: '一、限定詞組省略與左緣結構理論',
         list: [
           {
-            type: 'journal',
+            type: 'thesis',
             text: '限定詞組省略理論研究：從臺灣南島語觀點出發（Toward a Theory of DP Ellipsis: A Formosan Perspective）',
           },
           {
-            type: 'journal',
+            type: 'thesis',
             text: '賽夏語疑問詞問句及其左緣結構之研究（Left Periphery and Wh-questions in Saisiyat）',
           },
           {
@@ -581,6 +581,8 @@ const CRUISE_INTERNATIONAL_MODULE = {
 
 // ==========================================
 // 4. 陸地與海洋無碰撞固定路線產生器
+// 六角形島嶼已旋轉對齊，使頂角位於 0°, 60°, 120°, 180°, 240°, 300°
+// 平直邊（六角形的邊）正中央位於 ±30°, ±90°, ±150°（與三座跨海大橋完全垂直對齊！）
 // ==========================================
 function createHexagonPath(cx, cz, radius) {
   const pts = [];
@@ -600,38 +602,48 @@ function createOvalSeaRoute(cx, cz, rx, rz, y = -0.82) {
   return new THREE.CatmullRomCurve3(pts, true, 'catmullrom', 0.5);
 }
 
+// 跨島巡迴路徑：行人沿著六角形平邊走，並在「六角形的邊正中央」過橋
 function createGrandArchipelagoPath() {
   const pts = [
-    new THREE.Vector3(0, 0.05, 4.3),
-    new THREE.Vector3(0, 0.05, 9.6),
-    new THREE.Vector3(3.3, 0.05, 12.1),
-    new THREE.Vector3(3.3, 0.05, 15.9),
-    new THREE.Vector3(0, 0.05, 17.8),
-    new THREE.Vector3(-3.3, 0.05, 15.9),
-    new THREE.Vector3(-3.3, 0.05, 12.1),
-    new THREE.Vector3(0, 0.05, 9.6),
-    new THREE.Vector3(0, 0.05, 4.3),
-    new THREE.Vector3(3.7, 0.05, 2.1),
-    new THREE.Vector3(3.7, 0.05, -2.1),
-    new THREE.Vector3(8.8, 0.05, -5.1),
-    new THREE.Vector3(12.5, 0.05, -3.4),
-    new THREE.Vector3(15.8, 0.05, -5.3),
-    new THREE.Vector3(15.8, 0.05, -9.1),
-    new THREE.Vector3(12.5, 0.05, -11.0),
-    new THREE.Vector3(8.8, 0.05, -5.1),
-    new THREE.Vector3(3.7, 0.05, -2.1),
-    new THREE.Vector3(0, 0.05, -4.3),
-    new THREE.Vector3(-3.7, 0.05, -2.1),
-    new THREE.Vector3(-8.8, 0.05, -5.1),
-    new THREE.Vector3(-12.5, 0.05, -11.0),
-    new THREE.Vector3(-15.8, 0.05, -9.1),
-    new THREE.Vector3(-15.8, 0.05, -5.3),
-    new THREE.Vector3(-12.5, 0.05, -3.4),
-    new THREE.Vector3(-8.8, 0.05, -5.1),
-    new THREE.Vector3(-3.7, 0.05, -2.1),
-    new THREE.Vector3(-3.7, 0.05, 2.1),
+    // 從橙果主島南側平邊中點 (0, 3.77) 上原木棧橋 -> AI 實踐島北側平邊中點 (0, 10.75)
+    new THREE.Vector3(0, 0.05, 3.77),
+    new THREE.Vector3(0, 0.05, 10.75),
+    new THREE.Vector3(1.88, 0.05, 10.75),
+    new THREE.Vector3(3.75, 0.05, 14.0),
+    new THREE.Vector3(1.88, 0.05, 17.25),
+    new THREE.Vector3(-1.88, 0.05, 17.25),
+    new THREE.Vector3(-3.75, 0.05, 14.0),
+    new THREE.Vector3(-1.88, 0.05, 10.75),
+    new THREE.Vector3(0, 0.05, 10.75),
+    new THREE.Vector3(0, 0.05, 3.77),
+    // 沿橙果主島東南邊走至東北平邊中點 (3.26, -1.88) 上拱橋 -> 計量語料島西南平邊中點 (9.69, -5.58)
+    new THREE.Vector3(2.18, 0.05, 3.77),
+    new THREE.Vector3(4.35, 0.05, 0),
+    new THREE.Vector3(3.26, 0.05, -1.88),
+    new THREE.Vector3(9.69, 0.05, -5.58),
+    new THREE.Vector3(10.62, 0.05, -3.95),
+    new THREE.Vector3(14.38, 0.05, -3.95),
+    new THREE.Vector3(16.25, 0.05, -7.2),
+    new THREE.Vector3(14.38, 0.05, -10.45),
+    new THREE.Vector3(10.62, 0.05, -10.45),
+    new THREE.Vector3(9.69, 0.05, -5.58),
+    new THREE.Vector3(3.26, 0.05, -1.88),
+    // 沿橙果主島北邊走至西北平邊中點 (-3.26, -1.88) 上斜張橋 -> 社會政策島東南平邊中點 (-9.69, -5.58)
+    new THREE.Vector3(2.18, 0.05, -3.77),
+    new THREE.Vector3(-2.18, 0.05, -3.77),
+    new THREE.Vector3(-3.26, 0.05, -1.88),
+    new THREE.Vector3(-9.69, 0.05, -5.58),
+    new THREE.Vector3(-10.62, 0.05, -10.45),
+    new THREE.Vector3(-14.38, 0.05, -10.45),
+    new THREE.Vector3(-16.25, 0.05, -7.2),
+    new THREE.Vector3(-14.38, 0.05, -3.95),
+    new THREE.Vector3(-10.62, 0.05, -3.95),
+    new THREE.Vector3(-9.69, 0.05, -5.58),
+    new THREE.Vector3(-3.26, 0.05, -1.88),
+    new THREE.Vector3(-4.35, 0.05, 0),
+    new THREE.Vector3(-2.18, 0.05, 3.77),
   ];
-  return new THREE.CatmullRomCurve3(pts, true, 'catmullrom', 0.12);
+  return new THREE.CatmullRomCurve3(pts, true, 'catmullrom', 0.08);
 }
 
 function createOuterFerryRoute() {
@@ -649,7 +661,7 @@ function createOuterFerryRoute() {
 }
 
 // ==========================================
-// 5. 三座不同造型與配色的跨海大橋 (拱橋 / 斜張橋 / 原木棧橋)
+// 5. 三座不同造型與配色的跨海大橋 (垂直銜接於六角形的平邊中點)
 // ==========================================
 function ArchBridge({ start, end }) {
   const { sceneMode, setToastMessage } = useIslandStore();
@@ -659,7 +671,7 @@ function ArchBridge({ start, end }) {
   const length = Math.hypot(end[0] - start[0], end[2] - start[2]);
   const angle = Math.atan2(end[2] - start[2], end[0] - start[0]);
 
-  const hangerPositions = useMemo(() => [-1.4, -0.7, 0, 0.7, 1.4], []);
+  const hangerPositions = useMemo(() => [-1.6, -0.8, 0, 0.8, 1.6], []);
 
   return (
     <group
@@ -667,7 +679,7 @@ function ArchBridge({ start, end }) {
       rotation={[0, -angle, 0]}
       onClick={(e) => {
         e.stopPropagation();
-        setToastMessage('🌈 翡翠白玉拱橋（Arch Bridge）：以雙拋物線翡翠鋼拱與白玉橋面連結語料庫花園！');
+        setToastMessage('🌈 翡翠白玉拱橋（Arch Bridge）：垂直銜接於兩座六角島的平直邊中點，連結語料庫花園！');
       }}
     >
       <mesh receiveShadow castShadow>
@@ -686,15 +698,15 @@ function ArchBridge({ start, end }) {
       {[0.66, -0.66].map((zOffset, idx) => (
         <group key={idx}>
           <QuadraticBezierLine
-            start={[-length * 0.46, 0.1, zOffset]}
+            start={[-length * 0.42, 0.1, zOffset]}
             mid={[0, 2.15, zOffset]}
-            end={[length * 0.46, 0.1, zOffset]}
+            end={[length * 0.42, 0.1, zOffset]}
             color={isNight ? '#2dd4bf' : '#0f766e'}
             lineWidth={4.5}
           />
           {hangerPositions.map((hx, hIdx) => {
-            const normX = hx / (length * 0.46);
-            const archY = (1 - normX * normX) * 1.15;
+            const normX = hx / (length * 0.42);
+            const archY = Math.max(0.15, (1 - normX * normX) * 1.15);
             return (
               <mesh key={hIdx} position={[hx, archY / 2 + 0.1, zOffset]}>
                 <cylinderGeometry args={[0.025, 0.025, archY, 8]} />
@@ -712,11 +724,11 @@ function ArchBridge({ start, end }) {
         <boxGeometry args={[0.18, 0.12, 1.38]} />
         <meshStandardMaterial color="#0f766e" />
       </mesh>
-      <mesh position={[-length * 0.32, -0.55, 0]}>
+      <mesh position={[-length * 0.25, -0.55, 0]}>
         <cylinderGeometry args={[0.24, 0.3, 1.1, 12]} />
         <meshStandardMaterial color="#cbd5e1" />
       </mesh>
-      <mesh position={[length * 0.32, -0.55, 0]}>
+      <mesh position={[length * 0.25, -0.55, 0]}>
         <cylinderGeometry args={[0.24, 0.3, 1.1, 12]} />
         <meshStandardMaterial color="#cbd5e1" />
       </mesh>
@@ -732,7 +744,7 @@ function CableStayedBridge({ start, end }) {
   const length = Math.hypot(end[0] - start[0], end[2] - start[2]);
   const angle = Math.atan2(end[2] - start[2], end[0] - start[0]);
 
-  const cableAnchors = useMemo(() => [-1.85, -1.25, -0.65, 0.65, 1.25, 1.85], []);
+  const cableAnchors = useMemo(() => [-2.1, -1.4, -0.7, 0.7, 1.4, 2.1], []);
 
   return (
     <group
@@ -740,7 +752,7 @@ function CableStayedBridge({ start, end }) {
       rotation={[0, -angle, 0]}
       onClick={(e) => {
         e.stopPropagation();
-        setToastMessage('🌉 緋紅金冠斜張橋（Cable-Stayed Bridge）：以高聳雙柱塔與放射狀黃金鋼索連結語言政策講堂！');
+        setToastMessage('🌉 緋紅金冠斜張橋（Cable-Stayed Bridge）：垂直銜接於兩座六角島的平直邊中點，連結語言政策講堂！');
       }}
     >
       <mesh receiveShadow castShadow>
@@ -803,7 +815,7 @@ function WoodenBridge({ start, end }) {
   const length = Math.hypot(end[0] - start[0], end[2] - start[2]);
   const angle = Math.atan2(end[2] - start[2], end[0] - start[0]);
 
-  const posts = useMemo(() => [-1.6, -0.8, 0, 0.8, 1.6], []);
+  const posts = useMemo(() => [-2.0, -1.0, 0, 1.0, 2.0], []);
 
   return (
     <group
@@ -811,14 +823,14 @@ function WoodenBridge({ start, end }) {
       rotation={[0, -angle, 0]}
       onClick={(e) => {
         e.stopPropagation();
-        setToastMessage('🪵 暖陽原木棧橋（Wooden Bridge）：以溫潤杉木枕木與原木欄杆連結人工智慧咖啡廳！');
+        setToastMessage('🪵 暖陽原木棧橋（Wooden Bridge）：垂直銜接於兩座六角島的平直邊中點，連結人工智慧咖啡廳！');
       }}
     >
       <mesh receiveShadow castShadow>
         <boxGeometry args={[length, 0.12, 1.4]} />
         <meshStandardMaterial color="#b45309" roughness={0.75} />
       </mesh>
-      {[-1.7, -1.1, -0.5, 0.1, 0.7, 1.3, 1.8].map((px, idx) => (
+      {[-2.1, -1.4, -0.7, 0.0, 0.7, 1.4, 2.1].map((px, idx) => (
         <mesh key={idx} position={[px, 0.07, 0]} receiveShadow>
           <boxGeometry args={[0.25, 0.03, 1.38]} />
           <meshStandardMaterial color="#d97706" />
@@ -844,11 +856,11 @@ function WoodenBridge({ start, end }) {
           </mesh>
         </group>
       ))}
-      <mesh position={[-length * 0.28, -0.55, 0]}>
+      <mesh position={[-length * 0.22, -0.55, 0]}>
         <cylinderGeometry args={[0.18, 0.22, 1.1, 10]} />
         <meshStandardMaterial color="#78350f" />
       </mesh>
-      <mesh position={[length * 0.28, -0.55, 0]}>
+      <mesh position={[length * 0.22, -0.55, 0]}>
         <cylinderGeometry args={[0.18, 0.22, 1.1, 10]} />
         <meshStandardMaterial color="#78350f" />
       </mesh>
@@ -950,7 +962,6 @@ function SightseeingFerrySystem({ ferryCurve }) {
 
 // ==========================================
 // 7. 國際巨型郵輪「EUREKA 海洋號」與 8 國傳統服飾貴賓
-// (點擊郵輪即刻啟動跟隨鏡頭 + 展開海外國際會議發表清單)
 // ==========================================
 const EIGHT_NATIONS_PASSENGERS = [
   {
@@ -1818,7 +1829,8 @@ function GiantOrangeMonument({ position = [0, 0.04, 1.4] }) {
 }
 
 // ==========================================
-// 10. 四座六角主題島嶼與場館建築群 (路燈嚴格避開橋頭)
+// 10. 四座六角主題島嶼與場館建築群
+// ★ 六角形已旋轉 30° (Math.PI / 6)，使三座橋樑 100% 銜接在「六角形的邊」正中央！
 // ==========================================
 function HexThemeIslands() {
   const { activeModule, setActiveModule, setModalOpen, triggerCameraFlight, showLabels, isPaused, sceneMode } =
@@ -1857,6 +1869,7 @@ function HexThemeIslands() {
     }
   };
 
+  // 六角形的 6 個「角」位於 0°, 60°, 120°, 180°, 240°, 300°，路燈設於頂角，完全避開位於「邊」上的橋樑！
   const safeLampAngles = useMemo(() => [0, 1, 2, 3, 4, 5].map((i) => (i * Math.PI) / 3), []);
 
   return (
@@ -1864,26 +1877,42 @@ function HexThemeIslands() {
       {/* 01 主島：橙果島 (理論與描述語言學 · 語言學大殿堂) */}
       <group position={[0, 0, 0]} onClick={(e) => handleSelectIsland('theory', e)}>
         {isNight && <pointLight position={[0, 4.5, 0]} intensity={2.2} distance={14} color="#fde047" />}
-        <mesh position={[0, -0.45, 0]} receiveShadow castShadow>
+        {/* 旋轉 Math.PI / 6 使六角形的「邊」正對東北(-30°)、西北(-150°)與正南(+90°)三座橋 */}
+        <mesh position={[0, -0.45, 0]} rotation={[0, Math.PI / 6, 0]} receiveShadow castShadow>
           <cylinderGeometry args={[6.0, 5.7, 0.9, 6]} />
           <meshStandardMaterial color={isSnow ? '#e2e8f0' : '#95d5b2'} roughness={0.65} />
         </mesh>
-        <mesh position={[0, -0.95, 0]}>
+        <mesh position={[0, -0.95, 0]} rotation={[0, Math.PI / 6, 0]}>
           <cylinderGeometry args={[6.2, 5.5, 0.4, 6]} />
           <meshStandardMaterial color="#f5ebe0" roughness={0.7} />
         </mesh>
-        <mesh position={[0, -1.65, 0]}>
+        <mesh position={[0, -1.65, 0]} rotation={[0, Math.PI / 6, 0]}>
           <cylinderGeometry args={[5.4, 4.3, 1.1, 6]} />
           <meshStandardMaterial color="#d4a373" roughness={0.85} />
         </mesh>
 
-        <mesh position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, Math.PI / 6]} receiveShadow>
+        {/* 六角形環島步道 (與六角形島嶼的邊完全平行對齊) */}
+        <mesh position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
           <ringGeometry args={[3.8, 4.85, 6]} />
           <meshStandardMaterial color="#e7e5e4" roughness={0.7} />
         </mesh>
-        <mesh position={[0, 0.015, 0]} receiveShadow>
+        <mesh position={[0, 0.015, 0]} rotation={[0, Math.PI / 6, 0]} receiveShadow>
           <cylinderGeometry args={[3.6, 3.6, 0.04, 6]} />
           <meshStandardMaterial color="#fdfbf7" />
+        </mesh>
+
+        {/* 三條從環島步道通往「六角形平邊中點」的橋頭引道 */}
+        <mesh position={[3.9, 0.022, -2.25]} rotation={[0, Math.PI / 6, 0]} receiveShadow>
+          <boxGeometry args={[1.4, 0.03, 1.4]} />
+          <meshStandardMaterial color="#e7e5e4" />
+        </mesh>
+        <mesh position={[-3.9, 0.022, -2.25]} rotation={[0, -Math.PI / 6, 0]} receiveShadow>
+          <boxGeometry args={[1.4, 0.03, 1.4]} />
+          <meshStandardMaterial color="#e7e5e4" />
+        </mesh>
+        <mesh position={[0, 0.022, 4.5]} receiveShadow>
+          <boxGeometry args={[1.4, 0.03, 1.4]} />
+          <meshStandardMaterial color="#e7e5e4" />
         </mesh>
 
         <GiantOrangeMonument position={[0, 0.04, 1.5]} />
@@ -1954,20 +1983,25 @@ function HexThemeIslands() {
       {/* 02 東北島：計量語料島 (計量語言學與語料庫 · 語料庫花園) */}
       <group position={[12.5, 0, -7.2]} onClick={(e) => handleSelectIsland('corpus', e)}>
         {isNight && <pointLight position={[0, 4.0, 0]} intensity={1.8} distance={12} color="#38bdf8" />}
-        <mesh position={[0, -0.45, 0]} receiveShadow castShadow>
+        <mesh position={[0, -0.45, 0]} rotation={[0, Math.PI / 6, 0]} receiveShadow castShadow>
           <cylinderGeometry args={[5.2, 4.9, 0.9, 6]} />
           <meshStandardMaterial color={isSnow ? '#e2e8f0' : '#74c69d'} roughness={0.65} />
         </mesh>
-        <mesh position={[0, -0.95, 0]}>
+        <mesh position={[0, -0.95, 0]} rotation={[0, Math.PI / 6, 0]}>
           <cylinderGeometry args={[5.4, 4.7, 0.4, 6]} />
           <meshStandardMaterial color="#f5ebe0" />
         </mesh>
-        <mesh position={[0, -1.65, 0]}>
+        <mesh position={[0, -1.65, 0]} rotation={[0, Math.PI / 6, 0]}>
           <cylinderGeometry args={[4.6, 3.7, 1.1, 6]} />
           <meshStandardMaterial color="#d4a373" />
         </mesh>
-        <mesh position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, Math.PI / 6]} receiveShadow>
+        <mesh position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
           <ringGeometry args={[3.3, 4.15, 6]} />
+          <meshStandardMaterial color="#e7e5e4" />
+        </mesh>
+        {/* 西南平邊中點橋頭引道 */}
+        <mesh position={[-3.35, 0.022, 1.93]} rotation={[0, Math.PI / 6, 0]} receiveShadow>
+          <boxGeometry args={[1.3, 0.03, 1.4]} />
           <meshStandardMaterial color="#e7e5e4" />
         </mesh>
 
@@ -2009,7 +2043,7 @@ function HexThemeIslands() {
         <MiniFountain position={[0.4, 0.02, 1.5]} scale={0.55} />
         <SolarPanelArray position={[-1.6, 0, 1.3]} rotation={[0, 0.4, 0]} />
         <CuteTree position={[1.9, 0, 1.0]} scale={0.9} color="#2d6a4f" />
-        {[0, 1, 2, 4].map((i) => (
+        {[0, 1, 4, 5].map((i) => (
           <StreetLamp
             key={i}
             position={[Math.cos(safeLampAngles[i]) * 3.1, 0, Math.sin(safeLampAngles[i]) * 3.1]}
@@ -2034,20 +2068,25 @@ function HexThemeIslands() {
       {/* 03 西北島：社會政策島 (社會語言學與教育政策 · 語言政策講堂) */}
       <group position={[-12.5, 0, -7.2]} onClick={(e) => handleSelectIsland('policy', e)}>
         {isNight && <pointLight position={[0, 4.0, 0]} intensity={1.8} distance={12} color="#fde047" />}
-        <mesh position={[0, -0.45, 0]} receiveShadow castShadow>
+        <mesh position={[0, -0.45, 0]} rotation={[0, Math.PI / 6, 0]} receiveShadow castShadow>
           <cylinderGeometry args={[5.2, 4.9, 0.9, 6]} />
           <meshStandardMaterial color={isSnow ? '#e2e8f0' : '#80ed99'} roughness={0.65} />
         </mesh>
-        <mesh position={[0, -0.95, 0]}>
+        <mesh position={[0, -0.95, 0]} rotation={[0, Math.PI / 6, 0]}>
           <cylinderGeometry args={[5.4, 4.7, 0.4, 6]} />
           <meshStandardMaterial color="#f5ebe0" />
         </mesh>
-        <mesh position={[0, -1.65, 0]}>
+        <mesh position={[0, -1.65, 0]} rotation={[0, Math.PI / 6, 0]}>
           <cylinderGeometry args={[4.6, 3.7, 1.1, 6]} />
           <meshStandardMaterial color="#d4a373" />
         </mesh>
-        <mesh position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, Math.PI / 6]} receiveShadow>
+        <mesh position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
           <ringGeometry args={[3.3, 4.15, 6]} />
+          <meshStandardMaterial color="#e7e5e4" />
+        </mesh>
+        {/* 東南平邊中點橋頭引道 */}
+        <mesh position={[3.35, 0.022, 1.93]} rotation={[0, -Math.PI / 6, 0]} receiveShadow>
+          <boxGeometry args={[1.3, 0.03, 1.4]} />
           <meshStandardMaterial color="#e7e5e4" />
         </mesh>
 
@@ -2102,7 +2141,7 @@ function HexThemeIslands() {
             </mesh>
           </group>
         </group>
-        {[1, 2, 3, 4].map((i) => (
+        {[2, 3, 4, 5].map((i) => (
           <StreetLamp
             key={i}
             position={[Math.cos(safeLampAngles[i]) * 3.1, 0, Math.sin(safeLampAngles[i]) * 3.1]}
@@ -2127,20 +2166,25 @@ function HexThemeIslands() {
       {/* 04 南方島：AI 實踐島 (人工智慧應用 · 人工智慧咖啡廳) */}
       <group position={[0, 0, 14.0]} onClick={(e) => handleSelectIsland('systems', e)}>
         {isNight && <pointLight position={[0, 4.0, 0]} intensity={2.0} distance={12} color="#fbbf24" />}
-        <mesh position={[0, -0.45, 0]} receiveShadow castShadow>
+        <mesh position={[0, -0.45, 0]} rotation={[0, Math.PI / 6, 0]} receiveShadow castShadow>
           <cylinderGeometry args={[5.2, 4.9, 0.9, 6]} />
           <meshStandardMaterial color={isSnow ? '#e2e8f0' : '#b7e4c7'} roughness={0.65} />
         </mesh>
-        <mesh position={[0, -0.95, 0]}>
+        <mesh position={[0, -0.95, 0]} rotation={[0, Math.PI / 6, 0]}>
           <cylinderGeometry args={[5.4, 4.7, 0.4, 6]} />
           <meshStandardMaterial color="#f5ebe0" />
         </mesh>
-        <mesh position={[0, -1.65, 0]}>
+        <mesh position={[0, -1.65, 0]} rotation={[0, Math.PI / 6, 0]}>
           <cylinderGeometry args={[4.6, 3.7, 1.1, 6]} />
           <meshStandardMaterial color="#d4a373" />
         </mesh>
-        <mesh position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, Math.PI / 6]} receiveShadow>
+        <mesh position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
           <ringGeometry args={[3.3, 4.15, 6]} />
+          <meshStandardMaterial color="#e7e5e4" />
+        </mesh>
+        {/* 正北平邊中點橋頭引道 */}
+        <mesh position={[0, 0.022, -3.85]} receiveShadow>
+          <boxGeometry args={[1.4, 0.03, 1.3]} />
           <meshStandardMaterial color="#e7e5e4" />
         </mesh>
 
@@ -2907,7 +2951,7 @@ function OuterSatelliteIslands() {
     <group>
       {/* 1. 燈塔觀測站島 */}
       <group position={[-23.5, -0.3, -16.5]}>
-        <mesh position={[0, -0.3, 0]} receiveShadow castShadow>
+        <mesh position={[0, -0.3, 0]} rotation={[0, Math.PI / 6, 0]} receiveShadow castShadow>
           <cylinderGeometry args={[3.8, 4.4, 1.2, 6]} />
           <meshStandardMaterial color="#95d5b2" />
         </mesh>
@@ -2943,7 +2987,7 @@ function OuterSatelliteIslands() {
 
       {/* 2. 綠能風車島 */}
       <group position={[23.5, -0.3, -16.5]}>
-        <mesh position={[0, -0.3, 0]} receiveShadow castShadow>
+        <mesh position={[0, -0.3, 0]} rotation={[0, Math.PI / 6, 0]} receiveShadow castShadow>
           <cylinderGeometry args={[4.1, 4.7, 1.2, 6]} />
           <meshStandardMaterial color="#74c69d" />
         </mesh>
@@ -2978,7 +3022,7 @@ function OuterSatelliteIslands() {
 
       {/* 3. 櫻花沙龍島 */}
       <group position={[22.0, -0.3, 15.5]}>
-        <mesh position={[0, -0.3, 0]} receiveShadow castShadow>
+        <mesh position={[0, -0.3, 0]} rotation={[0, Math.PI / 6, 0]} receiveShadow castShadow>
           <cylinderGeometry args={[4.0, 4.6, 1.1, 6]} />
           <meshStandardMaterial color="#95d5b2" />
         </mesh>
@@ -3011,7 +3055,7 @@ function OuterSatelliteIslands() {
 
       {/* 4. 遠洋港灣島與停泊帆船 */}
       <group position={[-22.0, -0.3, 15.5]}>
-        <mesh position={[0, -0.3, 0]} receiveShadow castShadow>
+        <mesh position={[0, -0.3, 0]} rotation={[0, Math.PI / 6, 0]} receiveShadow castShadow>
           <cylinderGeometry args={[3.6, 4.2, 1.1, 6]} />
           <meshStandardMaterial color="#95d5b2" />
         </mesh>
@@ -3092,7 +3136,7 @@ function IslandScene({ controlsRef, cruiseShipRef }) {
     const controls = controlsRef.current;
     if (!controls) return;
 
-    // ★ 模式 A：持續跟隨「國際巨型郵輪」移動 ★
+    // 模式 A：持續跟隨「國際巨型郵輪」移動
     if (isFollowingCruise && cruiseShipRef.current) {
       const shipWorldPos = new THREE.Vector3();
       cruiseShipRef.current.getWorldPosition(shipWorldPos);
@@ -3101,7 +3145,6 @@ function IslandScene({ controlsRef, cruiseShipRef }) {
       const elapsedSinceStart = Date.now() - cruiseFollowStartTime;
 
       if (elapsedSinceStart < 1500 || !hasPrevShipPos.current) {
-        // 前 1.5 秒平滑飛近郵輪側前方最佳觀賞視角
         const shipQuat = new THREE.Quaternion();
         cruiseShipRef.current.getWorldQuaternion(shipQuat);
         const idealOffset = new THREE.Vector3(6.5, 5.0, 8.0).applyQuaternion(shipQuat);
@@ -3110,7 +3153,6 @@ function IslandScene({ controlsRef, cruiseShipRef }) {
         controls.object.position.lerp(idealCamPos, 0.08);
         controls.target.lerp(shipTarget, 0.12);
       } else {
-        // 之後每一幀皆加上郵輪位移向量，讓畫面 100% 持續跟著郵輪航行，且支援使用者自由旋轉/縮放
         const delta = shipWorldPos.clone().sub(prevShipWorldPos.current);
         controls.object.position.add(delta);
         controls.target.lerp(shipTarget, 0.25);
@@ -3174,9 +3216,10 @@ function IslandScene({ controlsRef, cruiseShipRef }) {
 
         <HexThemeIslands />
 
-        <ArchBridge start={[4.4, 0, -2.5]} end={[8.4, 0, -4.8]} />
-        <CableStayedBridge start={[-4.4, 0, -2.5]} end={[-8.4, 0, -4.8]} />
-        <WoodenBridge start={[0, 0, 5.1]} end={[0, 0, 9.3]} />
+        {/* ★ 三座跨海大橋：精準垂直連接於兩座六角島的「平直邊（邊中點）」 ★ */}
+        <ArchBridge start={[4.45, 0, -2.57]} end={[8.65, 0, -4.98]} />
+        <CableStayedBridge start={[-4.45, 0, -2.57]} end={[-8.65, 0, -4.98]} />
+        <WoodenBridge start={[0, 0, 5.12]} end={[0, 0, 9.55]} />
 
         {showSynergyLines && (
           <group>
@@ -3328,15 +3371,17 @@ export default function App() {
     triggerCameraFlight([0, 48.0, 4.0], [0, 0, 2.0]);
   };
 
-  // ★ 點擊「國際郵輪」按鈕：啟動全程跟船鏡頭 + 展開海外國際會議發表篇目 ★
   const handleFocusCruiseShip = () => {
     startFollowingCruise();
   };
 
-  // 根據文章類型回傳對應顏色圓點 (紅點=期刊/學位論文、淡綠點=會議論文、淡藍點=電子報)
+  // ★ 四色圓點渲染：紅點=期刊論文、黃點=學位論文、淡綠點=會議論文、淡藍點=電子報 ★
   const renderDotByType = (type) => {
     if (type === 'journal') {
-      return <span className="w-2.5 h-2.5 rounded-full bg-red-500 ring-2 ring-red-100 shrink-0 mt-1" title="期刊／學位論文" />;
+      return <span className="w-2.5 h-2.5 rounded-full bg-red-500 ring-2 ring-red-100 shrink-0 mt-1" title="期刊論文" />;
+    }
+    if (type === 'thesis') {
+      return <span className="w-2.5 h-2.5 rounded-full bg-yellow-400 ring-2 ring-yellow-100 shrink-0 mt-1" title="學位論文" />;
     }
     if (type === 'conf') {
       return <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-emerald-100 shrink-0 mt-1" title="會議論文" />;
@@ -3588,7 +3633,7 @@ export default function App() {
         </div>
       </aside>
 
-      {/* 6. 右側詳細研究與 AI 系統卡片 (支援三色圓點與 THCI/TSSCI 等級標章) */}
+      {/* 6. 右側詳細研究與 AI 系統卡片 (支援四色圓點：紅點=期刊、黃點=學位論文、淡綠點=會議論文、淡藍點=電子報) */}
       {isModalOpen && mod && (
         <div className="absolute top-14 md:top-4 right-3 md:right-5 bottom-20 md:bottom-16 z-30 w-[395px] max-w-[92vw] bg-[#fdfbf7]/95 backdrop-blur-xl border border-stone-200/90 rounded-3xl p-5 shadow-2xl pointer-events-auto flex flex-col justify-between overflow-hidden">
           <div className="overflow-y-auto pr-1 space-y-3.5">
@@ -3614,11 +3659,15 @@ export default function App() {
               {mod.quote}
             </div>
 
-            {/* 三色圓點圖例說明 */}
+            {/* 四色圓點圖例說明 */}
             <div className="flex flex-wrap items-center gap-3 bg-white/90 border border-stone-200/80 px-3 py-2 rounded-xl text-[11px] font-bold text-slate-600">
               <span className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-full bg-red-500 inline-block" />
-                期刊／學位論文
+                期刊論文
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-yellow-400 inline-block" />
+                學位論文
               </span>
               <span className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block" />
