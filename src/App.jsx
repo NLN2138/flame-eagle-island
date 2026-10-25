@@ -3555,7 +3555,7 @@ function SeaTurtlePod({ curve, offset = 0, speed = 0.02 }) {
   );
 }
 
-// ★ 新增：海面上的宜蘭傳奇地標「龜山島 (Guishan Island / Turtle Island)」 ★
+// ★ 已將左右方向互換：左為靈龜擺尾、右為昂首龜頭與牛奶海溫泉 ★
 function GuishanIsland({ position = [32.5, -0.3, 0.0] }) {
   const smoke1Ref = useRef();
   const smoke2Ref = useRef();
@@ -3588,72 +3588,75 @@ function GuishanIsland({ position = [32.5, -0.3, 0.0] }) {
       onClick={(e) => {
         e.stopPropagation();
         triggerCameraFlight([32.5, 8.5, 14.5], [32.5, 1.2, 0.0]);
-        setToastMessage('🐢 宜蘭精神地標「龜山島」！擁有昂首龜頭、401高地龜甲、靈龜擺尾與夢幻海底溫泉牛奶海！');
+        setToastMessage('🐢 宜蘭精神地標「龜山島」！左為靈龜擺尾、右為昂首龜頭與夢幻海底溫泉牛奶海！');
       }}
     >
-      {/* 海底溫泉「夢幻蒂芬妮牛奶海 (陰陽海)」漸層海域 */}
-      <mesh position={[0, -0.52, 4.2]} rotation={[-Math.PI / 2, 0, 0]}>
-        <circleGeometry args={[3.6, 32]} />
-        <meshStandardMaterial color="#67e8f9" emissive="#22d3ee" emissiveIntensity={0.35} transparent opacity={0.82} />
-      </mesh>
-      <mesh position={[0, -0.51, 3.8]} rotation={[-Math.PI / 2, 0, 0]}>
-        <circleGeometry args={[2.1, 24]} />
-        <meshStandardMaterial color="#ecfeff" emissive="#cffafe" emissiveIntensity={0.45} transparent opacity={0.9} />
-      </mesh>
+      {/* ★ 旋轉與鏡像調整：讓龜尾在左(-X)、龜頭與牛奶海在右(+X) ★ */}
+      <group rotation={[0, Math.PI * 0.65, 0]} scale={[-1, 1, 1]}>
+        {/* 海底溫泉「夢幻蒂芬妮牛奶海 (陰陽海)」漸層海域 */}
+        <mesh position={[0, -0.52, 4.2]} rotation={[-Math.PI / 2, 0, 0]}>
+          <circleGeometry args={[3.6, 32]} />
+          <meshStandardMaterial color="#67e8f9" emissive="#22d3ee" emissiveIntensity={0.35} transparent opacity={0.82} />
+        </mesh>
+        <mesh position={[0, -0.51, 3.8]} rotation={[-Math.PI / 2, 0, 0]}>
+          <circleGeometry args={[2.1, 24]} />
+          <meshStandardMaterial color="#ecfeff" emissive="#cffafe" emissiveIntensity={0.45} transparent opacity={0.9} />
+        </mesh>
 
-      {/* 1. 龜甲山體 (401高地渾圓山脊) */}
-      <mesh position={[0, 1.15, 0]} scale={[1.15, 0.95, 1.45]} castShadow receiveShadow>
-        <coneGeometry args={[3.4, 3.8, 7]} />
-        <meshStandardMaterial color={isSnow ? '#f1f5f9' : '#15803d'} roughness={0.75} />
-      </mesh>
-      <mesh position={[0, -0.25, 0]} scale={[1.2, 1.0, 1.5]} receiveShadow>
-        <cylinderGeometry args={[3.5, 4.1, 1.1, 7]} />
-        <meshStandardMaterial color="#57534e" roughness={0.85} />
-      </mesh>
-      {/* 龜甲山脈稜線層次 */}
-      <mesh position={[-0.6, 1.35, -0.5]} scale={[0.9, 0.85, 1.1]} castShadow>
-        <dodecahedronGeometry args={[1.85, 0]} />
-        <meshStandardMaterial color={isSnow ? '#e2e8f0' : '#166534'} roughness={0.8} />
-      </mesh>
+        {/* 1. 龜甲山體 (401高地渾圓山脊) */}
+        <mesh position={[0, 1.15, 0]} scale={[1.15, 0.95, 1.45]} castShadow receiveShadow>
+          <coneGeometry args={[3.4, 3.8, 7]} />
+          <meshStandardMaterial color={isSnow ? '#f1f5f9' : '#15803d'} roughness={0.75} />
+        </mesh>
+        <mesh position={[0, -0.25, 0]} scale={[1.2, 1.0, 1.5]} receiveShadow>
+          <cylinderGeometry args={[3.5, 4.1, 1.1, 7]} />
+          <meshStandardMaterial color="#57534e" roughness={0.85} />
+        </mesh>
+        {/* 龜甲山脈稜線層次 */}
+        <mesh position={[0.6, 1.35, -0.5]} scale={[0.9, 0.85, 1.1]} castShadow>
+          <dodecahedronGeometry args={[1.85, 0]} />
+          <meshStandardMaterial color={isSnow ? '#e2e8f0' : '#166534'} roughness={0.8} />
+        </mesh>
 
-      {/* 2. 昂首龜頭 (朝向 +Z 前方海面) 與火山硫磺岩壁 */}
-      <group position={[0, 0.45, 3.85]}>
-        <mesh rotation={[-0.35, 0, 0]} scale={[0.9, 1.15, 1.2]} castShadow>
-          <coneGeometry args={[1.45, 2.5, 6]} />
-          <meshStandardMaterial color="#78716c" roughness={0.85} />
-        </mesh>
-        <mesh position={[0, 0.85, 0.25]} scale={[0.85, 0.75, 1.0]} castShadow>
-          <sphereGeometry args={[1.05, 12, 12]} />
-          <meshStandardMaterial color={isSnow ? '#f8fafc' : '#15803d'} />
-        </mesh>
-        {/* 龜首硫磺岩黃斑 */}
-        <mesh position={[0, -0.2, 0.85]} rotation={[0.2, 0, 0]}>
-          <boxGeometry args={[1.1, 0.8, 0.4]} />
-          <meshStandardMaterial color="#fde047" roughness={0.9} />
-        </mesh>
-        {/* 龜島磺煙 (裊裊白煙) */}
-        <mesh ref={smoke1Ref} position={[0, 1.0, 1.0]}>
-          <sphereGeometry args={[0.45, 10, 10]} />
-          <meshStandardMaterial color="#ffffff" transparent opacity={0.65} />
-        </mesh>
-        <mesh ref={smoke2Ref} position={[0.3, 1.2, 0.9]}>
-          <sphereGeometry args={[0.38, 10, 10]} />
-          <meshStandardMaterial color="#fef9c3" transparent opacity={0.55} />
-        </mesh>
-      </group>
+        {/* 2. 昂首龜頭 (位於右側外海方向) 與火山硫磺岩壁 */}
+        <group position={[0, 0.45, 3.85]}>
+          <mesh rotation={[-0.35, 0, 0]} scale={[0.9, 1.15, 1.2]} castShadow>
+            <coneGeometry args={[1.45, 2.5, 6]} />
+            <meshStandardMaterial color="#78716c" roughness={0.85} />
+          </mesh>
+          <mesh position={[0, 0.85, 0.25]} scale={[0.85, 0.75, 1.0]} castShadow>
+            <sphereGeometry args={[1.05, 12, 12]} />
+            <meshStandardMaterial color={isSnow ? '#f8fafc' : '#15803d'} />
+          </mesh>
+          {/* 龜首硫磺岩黃斑 */}
+          <mesh position={[0, -0.2, 0.85]} rotation={[0.2, 0, 0]}>
+            <boxGeometry args={[1.1, 0.8, 0.4]} />
+            <meshStandardMaterial color="#fde047" roughness={0.9} />
+          </mesh>
+          {/* 龜島磺煙 (裊裊白煙) */}
+          <mesh ref={smoke1Ref} position={[0, 1.0, 1.0]}>
+            <sphereGeometry args={[0.45, 10, 10]} />
+            <meshStandardMaterial color="#ffffff" transparent opacity={0.65} />
+          </mesh>
+          <mesh ref={smoke2Ref} position={[-0.3, 1.2, 0.9]}>
+            <sphereGeometry args={[0.38, 10, 10]} />
+            <meshStandardMaterial color="#fef9c3" transparent opacity={0.55} />
+          </mesh>
+        </group>
 
-      {/* 3. 靈龜擺尾 (後方 -Z 延伸的細長安山岩礫石灘) */}
-      <group position={[0, -0.42, -4.2]} ref={tailRef}>
-        <mesh position={[0, 0, -1.6]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-          <coneGeometry args={[1.1, 4.2, 4]} />
-          <meshStandardMaterial color="#d6d3d1" roughness={0.9} />
-        </mesh>
+        {/* 3. 靈龜擺尾 (位於左側延伸的細長安山岩礫石灘) */}
+        <group position={[0, -0.42, -4.2]} ref={tailRef}>
+          <mesh position={[0, 0, -1.6]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+            <coneGeometry args={[1.1, 4.2, 4]} />
+            <meshStandardMaterial color="#d6d3d1" roughness={0.9} />
+          </mesh>
+        </group>
       </group>
 
       {showLabels && (
         <Html position={[0, 4.2, 0]} center distanceFactor={30}>
           <div className="bg-emerald-900/95 text-emerald-100 px-3 py-1 rounded-full text-[11px] font-black shadow-xl border border-emerald-400 whitespace-nowrap cursor-pointer">
-            🐢 龜山島 · 牛奶海溫泉 (點我飛覽)
+            🐢 龜山島 · 牛奶海溫泉
           </div>
         </Html>
       )}
