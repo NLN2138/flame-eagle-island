@@ -2633,7 +2633,7 @@ function HexThemeIslands() {
         )}
       </group>
 
-      {/* 02 東北島：計量語料島 (計量語言學與語料庫 · 語料庫花園) */}
+{/* 02 東北島：計量語料島 (計量語言學與語料庫 · 語料庫花園) —— 已移除太陽能板 */}
       <group position={[12.5, 0, -7.2]} onClick={(e) => handleSelectIsland('corpus', e)}>
         {isNight && <pointLight position={[0, 4.0, 0]} intensity={1.8} distance={12} color="#38bdf8" />}
         <mesh position={[0, -0.45, 0]} rotation={[0, Math.PI / 6, 0]} receiveShadow castShadow>
@@ -2693,7 +2693,8 @@ function HexThemeIslands() {
           <meshStandardMaterial color="#0f766e" />
         </mesh>
         <MiniFountain position={[0.4, 0.02, 1.5]} scale={0.55} />
-        <SolarPanelArray position={[-1.6, 0, 1.3]} rotation={[0, 0.4, 0]} />
+        {/* 已拔除太陽能板，改由蒼翠樹木點綴 */}
+        <CuteTree position={[-1.6, 0, 1.3]} scale={1.0} color="#2d6a4f" />
         <CuteTree position={[1.9, 0, 1.0]} scale={0.9} color="#2d6a4f" />
         {[0, 1, 4, 5].map((i) => (
           <StreetLamp
