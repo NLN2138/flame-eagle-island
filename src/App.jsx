@@ -47,7 +47,7 @@ const useIslandStore = create((set) => ({
       isFollowingCruise: true,
       cruiseFollowStartTime: Date.now(),
       cameraFlight: null,
-      toastMessage: '🚢 鏡頭已鎖定跟隨「EUREKA 海洋號」國際郵輪移動！右側展開臺灣以外之海外國際會議發表篇目',
+      toastMessage: '🚢 鏡頭已鎖定跟隨「EUREKA 海洋號」國際郵輪移動！',
     }),
   stopFollowingCruise: () => set({ isFollowingCruise: false }),
   triggerCameraFlight: (pos, target) =>
@@ -4155,7 +4155,7 @@ function IslandScene({ controlsRef, cruiseShipRef }) {
   const auxGrandBridgePath = useMemo(() => createAuxiliaryIslandsGrandPath(), []);
   const outerRingGrandPath = useMemo(() => createOuterRingGrandPath(), []);
 
-  // ★ 5 倍移動人潮與動物生成器（共 166 位角色分流於 10 條陸橋路線，零碰撞、60FPS 高效能） ★
+  // ★ 5 倍移動人潮與動物生成器（僅顯示純角色名稱，不放地點前綴） ★
   const crowdActors = useMemo(() => {
     const shirts = ['#e05a47', '#0d9488', '#2563eb', '#f59e0b', '#ec4899', '#8b5cf6', '#10b981', '#0284c7', '#f97316', '#6366f1'];
     const bottoms = ['#1e293b', '#334155', '#1e3a8a', '#064e3b', '#4c1d95', '#78350f', '#0f172a'];
@@ -4165,18 +4165,19 @@ function IslandScene({ controlsRef, cruiseShipRef }) {
     const actorTypes = ['walker', 'jogger', 'bike', 'scooter', 'umbrella', 'dog_walker', 'stroller_family', 'elder', 'pet'];
 
     const routeConfigs = [
-      { curve: hexPathOrange, count: 18, baseSpeed: 0.032, labelPrefix: '橙果主島', tagEvery: 4 },
-      { curve: hexPathCorpus, count: 12, baseSpeed: 0.035, labelPrefix: '語料花園', tagEvery: 4 },
-      { curve: hexPathPolicy, count: 12, baseSpeed: 0.034, labelPrefix: '政策講堂', tagEvery: 4 },
-      { curve: hexPathSystems, count: 12, baseSpeed: 0.036, labelPrefix: 'AI咖啡廳', tagEvery: 4 },
-      { curve: hexPathEcology, count: 12, baseSpeed: 0.033, labelPrefix: '生態保育', tagEvery: 4 },
-      { curve: hexPathRecreation, count: 12, baseSpeed: 0.038, labelPrefix: '遊樂休閒', tagEvery: 4 },
-      { curve: hexPathMovie, count: 12, baseSpeed: 0.034, labelPrefix: '星光影城', tagEvery: 4 },
-      { curve: grandBridgePath, count: 24, baseSpeed: 0.014, labelPrefix: '跨島研究', tagEvery: 6 },
-      { curve: auxGrandBridgePath, count: 24, baseSpeed: 0.015, labelPrefix: '跨島探索', tagEvery: 6 },
-      { curve: outerRingGrandPath, count: 28, baseSpeed: 0.013, labelPrefix: '外環巡遊', tagEvery: 6 },
+      { curve: hexPathOrange, count: 18, baseSpeed: 0.032, tagEvery: 4 },
+      { curve: hexPathCorpus, count: 12, baseSpeed: 0.035, tagEvery: 4 },
+      { curve: hexPathPolicy, count: 12, baseSpeed: 0.034, tagEvery: 4 },
+      { curve: hexPathSystems, count: 12, baseSpeed: 0.036, tagEvery: 4 },
+      { curve: hexPathEcology, count: 12, baseSpeed: 0.033, tagEvery: 4 },
+      { curve: hexPathRecreation, count: 12, baseSpeed: 0.038, tagEvery: 4 },
+      { curve: hexPathMovie, count: 12, baseSpeed: 0.034, tagEvery: 4 },
+      { curve: grandBridgePath, count: 24, baseSpeed: 0.014, tagEvery: 6 },
+      { curve: auxGrandBridgePath, count: 24, baseSpeed: 0.015, tagEvery: 6 },
+      { curve: outerRingGrandPath, count: 28, baseSpeed: 0.013, tagEvery: 6 },
     ];
 
+    // 純角色名稱對照表（不含任何島嶼或地點名稱）
     const roleNames = {
       walker: '漫步學者',
       jogger: '活力跑者',
@@ -4185,7 +4186,7 @@ function IslandScene({ controlsRef, cruiseShipRef }) {
       umbrella: '撐傘旅人',
       dog_walker: '遛狗居民',
       stroller_family: '溫馨親子',
-      elder: '散步長者',
+      elder: '漫步長者',
       pet: '快樂萌寵',
     };
 
@@ -4211,7 +4212,7 @@ function IslandScene({ controlsRef, cruiseShipRef }) {
           hair: hairs[idx % hairs.length],
           umbrellaColor: umbrellas[idx % umbrellas.length],
           petColor: pets[idx % pets.length],
-          role: `${rc.labelPrefix}·${roleNames[aType]}`,
+          role: roleNames[aType], // ★ 已移除地點前綴，只顯示純角色名稱 ★
           showTag: i % rc.tagEvery === 0,
         });
       }
