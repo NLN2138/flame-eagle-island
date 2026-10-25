@@ -3555,7 +3555,7 @@ function SeaTurtlePod({ curve, offset = 0, speed = 0.02 }) {
   );
 }
 
-// ★ 已將左右方向互換：左為靈龜擺尾、右為昂首龜頭與牛奶海溫泉 ★
+// ★ 已再往左（逆時針）旋轉 90 度：rotation 由 Math.PI * 0.65 改為 Math.PI * 1.15 ★
 function GuishanIsland({ position = [32.5, -0.3, 0.0] }) {
   const smoke1Ref = useRef();
   const smoke2Ref = useRef();
@@ -3588,11 +3588,12 @@ function GuishanIsland({ position = [32.5, -0.3, 0.0] }) {
       onClick={(e) => {
         e.stopPropagation();
         triggerCameraFlight([32.5, 8.5, 14.5], [32.5, 1.2, 0.0]);
-        setToastMessage('🐢 宜蘭精神地標「龜山島」！左為靈龜擺尾、右為昂首龜頭與夢幻海底溫泉牛奶海！');
+        setToastMessage('🐢 宜蘭精神地標「龜山島」！擁有昂首龜頭、401高地龜甲、靈龜擺尾與夢幻海底溫泉牛奶海！');
       }}
     >
-      {/* ★ 旋轉與鏡像調整：讓龜尾在左(-X)、龜頭與牛奶海在右(+X) ★ */}
-      <group rotation={[0, Math.PI * 0.65, 0]} scale={[-1, 1, 1]}>
+      {/* ★ 角度控制：Math.PI * 1.15 為再往左（逆時針）轉 90 度 ★
+          （若想微調方向，可修改 1.15：1.5=龜頭朝正左、1.0=朝正上、0.5=朝正右、0.15=順時針轉90度） */}
+      <group rotation={[0, Math.PI * 1.15, 0]} scale={[-1, 1, 1]}>
         {/* 海底溫泉「夢幻蒂芬妮牛奶海 (陰陽海)」漸層海域 */}
         <mesh position={[0, -0.52, 4.2]} rotation={[-Math.PI / 2, 0, 0]}>
           <circleGeometry args={[3.6, 32]} />
@@ -3618,7 +3619,7 @@ function GuishanIsland({ position = [32.5, -0.3, 0.0] }) {
           <meshStandardMaterial color={isSnow ? '#e2e8f0' : '#166534'} roughness={0.8} />
         </mesh>
 
-        {/* 2. 昂首龜頭 (位於右側外海方向) 與火山硫磺岩壁 */}
+        {/* 2. 昂首龜頭與火山硫磺岩壁 */}
         <group position={[0, 0.45, 3.85]}>
           <mesh rotation={[-0.35, 0, 0]} scale={[0.9, 1.15, 1.2]} castShadow>
             <coneGeometry args={[1.45, 2.5, 6]} />
@@ -3644,7 +3645,7 @@ function GuishanIsland({ position = [32.5, -0.3, 0.0] }) {
           </mesh>
         </group>
 
-        {/* 3. 靈龜擺尾 (位於左側延伸的細長安山岩礫石灘) */}
+        {/* 3. 靈龜擺尾 (延伸的細長安山岩礫石灘) */}
         <group position={[0, -0.42, -4.2]} ref={tailRef}>
           <mesh position={[0, 0, -1.6]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
             <coneGeometry args={[1.1, 4.2, 4]} />
@@ -3656,7 +3657,7 @@ function GuishanIsland({ position = [32.5, -0.3, 0.0] }) {
       {showLabels && (
         <Html position={[0, 4.2, 0]} center distanceFactor={30}>
           <div className="bg-emerald-900/95 text-emerald-100 px-3 py-1 rounded-full text-[11px] font-black shadow-xl border border-emerald-400 whitespace-nowrap cursor-pointer">
-            🐢 龜山島 · 牛奶海溫泉
+            🐢 龜山島 · 牛奶海溫泉 (點我飛覽)
           </div>
         </Html>
       )}
