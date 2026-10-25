@@ -4777,7 +4777,7 @@ export default function App() {
               </span>
             </div>
             <p className="text-[11px] font-medium text-slate-500 mt-1">
-              關於人、語言與社會...
+             Y.-C. CHOU | 關於人、語言與文明...
             </p>
           </div>
 
