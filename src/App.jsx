@@ -47,7 +47,7 @@ const useIslandStore = create((set) => ({
       isFollowingCruise: true,
       cruiseFollowStartTime: Date.now(),
       cameraFlight: null,
-      toastMessage: '🚢 鏡頭已鎖定跟隨「EUREKA 海洋號」國際郵輪移動！',
+      toastMessage: '🚢 鏡頭已鎖定跟隨「EUREKA 黑潮號」國際郵輪移動！',
     }),
   stopFollowingCruise: () => set({ isFollowingCruise: false }),
   triggerCameraFlight: (pos, target) =>
@@ -512,7 +512,7 @@ const researchModules = {
 const CRUISE_INTERNATIONAL_MODULE = {
   id: '🚢',
   themeName: 'GLOBAL · 國際學術巡航',
-  venueName: 'EUREKA 海洋號 · 海外國際會議發表',
+  venueName: 'EUREKA 黑潮號 · 海外國際會議發表',
   islandName: '🚢 國際巨型郵輪（鏡頭持續跟隨移動中）',
   code: 'INTERNATIONAL CONFERENCES OUTSIDE TAIWAN',
   title: '海外國際會議發表篇目',
@@ -1345,7 +1345,7 @@ function InternationalCruiseShip({ cruiseCurve, shipRef }) {
                 : 'bg-gradient-to-r from-amber-500 to-rose-600 text-white border-amber-200 hover:scale-105'
             }`}
           >
-            🚢 國際巨型郵輪藍鯨號
+            🚢 國際巨型郵輪黑潮號
           </div>
         </Html>
       )}
@@ -1388,7 +1388,7 @@ function FlyingHelicopter() {
       scale={[0.78, 0.78, 0.78]}
       onClick={(e) => {
         e.stopPropagation();
-        setToastMessage('🚁 空中巡航號直升機：正從高空俯瞰橙果島、7 座六角群島與外海郵輪！');
+        setToastMessage('🚁 空中巡航號直升機！');
       }}
     >
       <mesh rotation={[Math.PI / 2, 0, 0]} castShadow>
@@ -4321,8 +4321,8 @@ function IslandScene({ controlsRef, cruiseShipRef }) {
         <RouteSUPPaddler curve={supBayCurve} offset={0.0} speed={0.04} boardColor="#facc15" role="SUP 玩家" />
         <RouteSUPPaddler curve={supBayCurve} offset={0.5} speed={0.04} boardColor="#34d399" role="SUP 初學者" />
 
-        <WaveSurfer curve={surferCurve} offset={0.0} speed={0.048} boardColor="#fb7185" wetsuitColor="#0284c7" role="破浪衝浪客 A" />
-        <WaveSurfer curve={surferCurve} offset={0.5} speed={0.048} boardColor="#facc15" wetsuitColor="#0f172a" role="破浪衝浪客 B" />
+        <WaveSurfer curve={surferCurve} offset={0.0} speed={0.048} boardColor="#fb7185" wetsuitColor="#0284c7" role="衝浪高手" />
+        <WaveSurfer curve={surferCurve} offset={0.5} speed={0.048} boardColor="#facc15" wetsuitColor="#0f172a" role="衝浪初學者" />
 
         <RacingSailboat curve={sailboatCurve} offset={0.0} speed={0.028} sailColor="#f97316" hullColor="#ffffff" role="競技風帆 1號" />
         <RacingSailboat curve={sailboatCurve} offset={0.33} speed={0.028} sailColor="#38bdf8" hullColor="#f8fafc" role="競技風帆 2號" />
