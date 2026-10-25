@@ -150,7 +150,7 @@ const researchModules = {
     summary: '解構人類語言深層語法，探索臺灣南島語與漢語之省略機制、左緣結構與句法語意介面。',
     quote: '「從形式句法與類型學視角，解構南島語與漢語中看不見卻決定語意的深層語法結構。」',
     stats: { itemsCount: '10 篇著作', synergyCount: '3 類核心主題' },
-    synergyWith: ['02 語料庫花園', '04 人工智慧咖啡廳'],
+    synergyWith: ['02 語料庫花園', '04 人工智慧咖啡館'],
     center: [0, 0, 0],
     cameraPos: [0, 6.2, 9.2],
     categories: [
@@ -222,7 +222,7 @@ const researchModules = {
     summary: '灌溉大規模真實口語與學習者語料，以依存距離（MDD）與統計模型剖析語音變異與詞彙常模。',
     quote: '「讓真實語料說話：從自由變異到偏誤類型，建立客觀可驗證的語言計量指標。」',
     stats: { itemsCount: '18 篇著作', synergyCount: '4 類核心主題' },
-    synergyWith: ['01 語言學大殿堂', '03 語言政策講堂', '04 人工智慧咖啡廳'],
+    synergyWith: ['01 語言學大殿堂', '03 語言政策講堂', '04 人工智慧咖啡館'],
     center: [12.5, 0, -7.2],
     cameraPos: [12.5, 6.0, 1.5],
     categories: [
@@ -334,7 +334,7 @@ const researchModules = {
     summary: '結合語料庫輔助批評論述分析與跨國教育比較，連結實證語言證據與公共政策治理。',
     quote: '「連結語言證據與公共治理：從課綱教科書體檢到國際多語教育借鑑。」',
     stats: { itemsCount: '17 篇著作', synergyCount: '4 類核心主題' },
-    synergyWith: ['02 語料庫花園', '04 人工智慧咖啡廳'],
+    synergyWith: ['02 語料庫花園', '04 人工智慧咖啡館'],
     center: [-12.5, 0, -7.2],
     cameraPos: [-12.5, 6.0, 1.5],
     categories: [
@@ -432,11 +432,11 @@ const researchModules = {
   systems: {
     id: '04',
     themeName: '04 人工智慧應用',
-    venueName: '04 人工智慧咖啡廳',
-    islandName: '⚡ AI 實踐島 · 人工智慧咖啡廳',
+    venueName: '04 人工智慧咖啡館',
+    islandName: '⚡ AI 實踐島 · 人工智慧咖啡館',
     code: 'THEME 04 · 人工智慧應用',
-    title: '人工智慧咖啡廳',
-    shortTitle: '人工智慧咖啡廳',
+    title: '人工智慧咖啡館',
+    shortTitle: '人工智慧咖啡館',
     summary: '將依存句法演算法、自動語音辨識與測驗字頻常模，沖泡成服務教育現場的三大線上 AI 系統。',
     quote: '「從理論建模到程式實作，打造服務教育現場與研究社群的智慧化開源工具。」',
     stats: { itemsCount: '3 座線上系統', synergyCount: '3 類核心技術' },
@@ -861,7 +861,7 @@ function WoodenBridge({ start, end }) {
       rotation={[0, -angle, 0]}
       onClick={(e) => {
         e.stopPropagation();
-        setToastMessage('🪵 暖陽原木棧橋（Wooden Bridge）：垂直銜接於兩座六角島的平直邊中點，連結人工智慧咖啡廳！');
+        setToastMessage('🪵 暖陽原木棧橋（Wooden Bridge）：垂直銜接於兩座六角島的平直邊中點，連結人工智慧咖啡館！');
       }}
     >
       <mesh receiveShadow castShadow>
@@ -2814,7 +2814,7 @@ function HexThemeIslands() {
         )}
       </group>
 
-      {/* 04 南方島：AI 實踐島 (人工智慧應用 · 人工智慧咖啡廳) */}
+      {/* 04 南方島：AI 實踐島 (人工智慧應用 · 人工智慧咖啡館) */}
       <group position={[0, 0, 14.0]} onClick={(e) => handleSelectIsland('systems', e)}>
         {isNight && <pointLight position={[0, 4.0, 0]} intensity={2.0} distance={12} color="#fbbf24" />}
         <mesh position={[0, -0.45, 0]} rotation={[0, Math.PI / 6, 0]} receiveShadow castShadow>
@@ -2891,7 +2891,7 @@ function HexThemeIslands() {
                   : 'bg-amber-50/95 text-amber-900 border-amber-300 hover:scale-105'
               }`}
             >
-              ⚡ 04 人工智慧咖啡廳
+              ⚡ 04 人工智慧咖啡館
             </div>
           </Html>
         )}
@@ -4080,7 +4080,7 @@ function OuterSatelliteIslands() {
 // 14. 外圍六座跨海橋樑路徑與 3D 群島總場景 (含 5 倍移動人潮、龜山島、衝浪、帆船與海龜)
 // ==========================================
 
-// ★ 外圍六座橋樑環線：串聯 電影島 ⇄ 語料庫花園 ⇄ 生態島 ⇄ AI咖啡廳 ⇄ 休閒島 ⇄ 語言政策講堂 ⇄ 電影島 ★
+// ★ 外圍六座橋樑環線：串聯 電影島 ⇄ 語料庫花園 ⇄ 生態島 ⇄ AI咖啡館 ⇄ 休閒島 ⇄ 語言政策講堂 ⇄ 電影島 ★
 function createOuterRingGrandPath() {
   const pts = [
     // 正北電影島 (0, -14.0) 東南平邊 -> 外環橋 1 -> 東北語料庫島 (12.5, -7.2) 西北平邊
@@ -4354,9 +4354,9 @@ function IslandScene({ controlsRef, cruiseShipRef }) {
         <SimpleFlatBridge start={[3.85, 0, -11.9]} end={[8.65, 0, -9.3]} />
         {/* 外環橋 2：東北語料庫花園 (正南邊) ⇄ 東南生態島 (正北邊) */}
         <SimpleFlatBridge start={[12.5, 0, -2.75]} end={[12.5, 0, 2.75]} />
-        {/* 外環橋 3：東南生態島 (西南邊) ⇄ 正南 AI 咖啡廳 (東北邊) */}
+        {/* 外環橋 3：東南生態島 (西南邊) ⇄ 正南 AI 咖啡館 (東北邊) */}
         <SimpleFlatBridge start={[8.65, 0, 9.3]} end={[3.85, 0, 11.9]} />
-        {/* 外環橋 4：正南 AI 咖啡廳 (西北邊) ⇄ 西南休閒島 (東南邊) */}
+        {/* 外環橋 4：正南 AI 咖啡館 (西北邊) ⇄ 西南休閒島 (東南邊) */}
         <SimpleFlatBridge start={[-3.85, 0, 11.9]} end={[-8.65, 0, 9.3]} />
         {/* 外環橋 5：西南休閒島 (正北邊) ⇄ 西北政策講堂 (正南邊) */}
         <SimpleFlatBridge start={[-12.5, 0, 2.75]} end={[-12.5, 0, -2.75]} />
